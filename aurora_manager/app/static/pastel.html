@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurora Manager</title>
+<link rel="stylesheet" href="pastel.css?v=__V__">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="logo"><i></i>Aurora Manager</div>
+    <select id="proj" title="Projekt (dashboard)" style="max-width:240px;background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:7px 10px"></select>
+    <a class="btn sm" href="manager/" style="text-decoration:none" title="Instalacja, kopie zapasowe, nowy dashboard">Kopie i instalacja</a>
+    <button class="btn sm" id="newproj">+ Nowy projekt</button>
+    <a class="btn sm" id="opendash" target="_blank" rel="noopener" style="text-decoration:none" title="Otwórz dashboard w Home Assistant">Otwórz dashboard ↗</a>
+    <button class="btn sm bad" id="delproj" hidden>Usuń projekt</button>
+    <span class="crumb" id="crumb"></span>
+    <span class="sp"></span>
+    <span class="pill" id="state">…</span>
+    <button class="btn sm" id="undo" disabled>↶ Cofnij</button>
+    <button class="btn sm" id="redo" disabled>↷ Ponów</button>
+    <button class="btn pri" id="publish" disabled>Publikuj…</button>
+  </header>
+  <nav id="nav"></nav>
+  <section class="main" id="main"></section>
+  <aside class="card insp" id="insp"></aside>
+</div>
+<div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
+<div class="toast" id="toast" hidden></div>
+<script src="pastel.js?v=__V__"></script>
+</body>
+</html>

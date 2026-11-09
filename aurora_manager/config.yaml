@@ -1,0 +1,42 @@
+name: Aurora Manager
+version: "2.0.0"
+slug: aurora_manager
+description: Aurora Manager - edytor dashboardów Aurora (układ, pokoje, progi, widoki, wygaszacz), tworzenie nowych dashboardów od zera oraz instalacja, kopie zapasowe i przywracanie.
+url: https://github.com/jaque66/dashboard-aurora-manager
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: application
+boot: auto
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:weather-night
+panel_title: Aurora Manager
+homeassistant_api: true
+map:
+  - type: homeassistant_config
+    read_only: false
+    path: /config
+ports:
+  8099/tcp: null
+ports_description:
+  8099/tcp: Bezposredni dostep do Aurora Managera (poza paskiem bocznym)
+options:
+  language: pl
+  log_level: info
+  output_dir: hud_scene
+  auto_backup: true
+  backup_keep: 10
+  manager_backup_dir: aurora_backups
+  manager_auto_backup: true
+  manager_backup_keep: 14
+schema:
+  language: list(pl|en)
+  log_level: list(debug|info|warning|error)
+  output_dir: match(^[A-Za-z0-9_-]{1,40}$)
+  auto_backup: bool
+  backup_keep: int(1,100)
+  manager_backup_dir: match(^[A-Za-z0-9_-]{1,40}$)
+  manager_auto_backup: bool
+  manager_backup_keep: int(1,200)

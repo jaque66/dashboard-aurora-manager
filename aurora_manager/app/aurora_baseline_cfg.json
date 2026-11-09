@@ -1,0 +1,68 @@
+{
+ "rooms": [],
+ "out": {
+  "t": "",
+  "h": "",
+  "weather": ""
+ },
+ "pm": "",
+ "purifier": "",
+ "fuel": [],
+ "cal": [],
+ "calDays": 2,
+ "lightsOff": [],
+ "mute": "",
+ "wash": {
+  "status": "",
+  "end": "",
+  "idle": [],
+  "phase": {
+   "running": "",
+   "detecting": "",
+   "rinsing": "",
+   "rinse_hold": "",
+   "spinning": "",
+   "drying": "",
+   "cool_down": "",
+   "refreshing": "",
+   "pause": ""
+  }
+ },
+ "gas": "",
+ "floodK": "",
+ "floodL": "",
+ "alarm": "",
+ "alarmSw": "",
+ "door": "",
+ "bats": [],
+ "temps": [],
+ "hums": [],
+ "humMin": 35,
+ "humMax": 60,
+ "offline": [],
+ "events": [],
+ "media": {
+  "active": "",
+  "radio": "",
+  "tvs": []
+ },
+ "pipeline": "",
+ "warn": "",
+ "tab": {
+  "bat": "",
+  "chg": ""
+ },
+ "f1": {
+  "on": true
+ },
+ "reminders": [],
+ "remSlots": [],
+ "remWarn": 3,
+ "order": [],
+ "hide": [],
+ "server": {
+  "nodes": [],
+  "guests": [],
+  "storages": []
+ }
+}

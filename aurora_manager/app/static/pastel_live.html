@@ -1,0 +1,139 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Podgląd Aurora</title>
+<style>html,body{margin:0;height:100%;background:#1b1c1f}</style></head><body>
+<script type="module">
+// Podglad na zywo w edytorze: prawdziwa karta Aurora (ten sam plik JS co na dashboardzie), prawdziwe stany z Home Assistant,
+// niepublikowany uklad przekazywany przez postMessage. Klikniecie sekcji lub elementu zwraca wybor do edytora zamiast nawigowac.
+class HaIcon extends HTMLElement {
+  static get observedAttributes() { return ['icon']; }
+  connectedCallback() { this.r(); } attributeChangedCallback() { this.r(); }
+  r() { const n = (this.getAttribute('icon') || '').replace(/^mdi:/, ''); if (!n) { this.style.cssText = ''; return; }
+    const u = 'url(https://cdn.jsdelivr.net/npm/@mdi/svg@7.4.47/svg/' + n + '.svg)';
+    this.style.cssText = 'display:inline-block;flex:none;width:var(--mdc-icon-size,24px);height:var(--mdc-icon-size,24px);background:currentColor;-webkit-mask:' + u + ' center/contain no-repeat;mask:' + u + ' center/contain no-repeat'; }
+}
+if (!customElements.get('ha-icon')) customElements.define('ha-icon', HaIcon);
+const q = new URLSearchParams(location.search);
+try { await import('/local/jarvis/pastel-home-card.js?t=' + Date.now()); } catch (e) { await import('./assets/pastel-home-card.js'); }   // awaryjnie neutralna karta z dodatku
+let card = null, lastNav = null, lastCfg = '', SEL = {sec: null, key: null};
+const mk = (list) => { const o = {}; (list || []).forEach((s) => { o[s.entity_id] = s; });
+  return {states: o, user: {name: 'Podgląd', is_admin: true}, config: {version: 'podgląd', location_name: 'Podgląd'}, themes: {darkMode: true}, selectedTheme: null, language: 'pl', locale: {language: 'pl'},
+    callService() {}, callWS: async () => ({}), callApi: (method, path) => new Promise((res) => { const id = ++apiN; pend[id] = res; post({t: 'api', id, path}); setTimeout(() => { if (pend[id]) { delete pend[id]; res([]); } }, 25000); }), connection: {subscribeMessage() {}}}; };
+let apiN = 0; const pend = {};
+window.addEventListener('message', (ev) => { const m = ev.data; if (m && m.t === 'apiRes' && pend[m.id]) { pend[m.id](m.res); delete pend[m.id]; } });
+const post = (m) => parent.postMessage(m, '*');
+const root = () => card && card.shadowRoot;
+// nakladka edycji: zaznaczenie, podswietlenie, przeciaganie sekcji i uchwyty rozmiaru (rysowane nad karta, wiec nie ginie przy jej przerysowaniu)
+document.documentElement.style.userSelect = 'none';
+const ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:99999'; document.body.append(ov);
+const mkh = (cur) => { const i = document.createElement('i'); i.style.cssText = 'position:absolute;display:none;background:#a8a4f2;border:2px solid #17161f;border-radius:99px;pointer-events:auto;touch-action:none;cursor:' + cur; ov.append(i); return i; };
+const hr = mkh('ew-resize'), hb = mkh('ns-resize');
+const ghost = document.createElement('div'); ghost.style.cssText = 'position:absolute;display:none;background:#a8a4f2;color:#17161f;font:800 14px system-ui;padding:6px 12px;border-radius:99px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.4)'; ov.append(ghost);
+const secOf = (path) => { for (const n of path) if (n && n.id && /^s-/.test(n.id)) return n.id.slice(2); return null; };
+const hroom = (path) => { for (const n of path) { if (n && n.classList && n.classList.contains('room') && n.dataset && n.dataset.id) return n.dataset.id; } return null; };
+const keyOf = (path) => { for (const n of path) { if (n === document) break; if (n && n.getAttribute && n.getAttribute('data-pe')) return n.getAttribute('data-pe'); } return null; };
+function selCss() {
+  const r = root(); if (!r) return; let st = r.getElementById('pesel'); if (!st) { st = document.createElement('style'); st.id = 'pesel'; r.appendChild(st); }
+  st.textContent = '[data-hov]{outline:1.5px dashed #a8a4f2 !important;outline-offset:1px;cursor:pointer}[data-drop]{outline:3px solid #4cc38e !important;outline-offset:2px}' +
+    (SEL.sec ? '#s-' + SEL.sec + '{outline:2px solid #a8a4f2;outline-offset:3px;border-radius:22px}' : '') + (SEL.key ? (SEL.room ? '.room[data-id="' + String(SEL.room).replace(/[^a-z0-9_]/g, '') + '"] ' : '') + '[data-pe="' + SEL.key.replace(/"/g, '') + '"]{outline:2px solid #ff9fc6 !important;outline-offset:1px}' : '') + (SEL.dev !== null && SEL.dev !== undefined ? '.dcard[data-di="' + (+SEL.dev) + '"]{outline:2px solid #ff9fc6;outline-offset:2px;border-radius:18px}' : '');
+}
+const wide = () => innerWidth >= 900;
+function place() {
+  const r = root(), s = SEL.sec && r && r.getElementById('s-' + SEL.sec);
+  hr.style.display = hb.style.display = 'none'; if (!s || !wide() || getComputedStyle(s).display === 'none') return;
+  const b = s.getBoundingClientRect(); if (b.width < 20) return;
+  Object.assign(hr.style, {display: 'block', left: (b.right - 5) + 'px', top: (b.top + b.height * .25) + 'px', width: '10px', height: (b.height * .5) + 'px'});
+  Object.assign(hb.style, {display: 'block', left: (b.left + b.width * .25) + 'px', top: (b.bottom - 5) + 'px', width: (b.width * .5) + 'px', height: '10px'});
+}
+setInterval(place, 400); addEventListener('resize', place);
+// granice sciezek siatki w px widoku (z uwzglednieniem zoomu karty): [{s, e}] w osi X lub Y
+function tracks(axis) {
+  const home = root().getElementById('home'), cs = getComputedStyle(home), hb_ = home.getBoundingClientRect(), z = hb_.width / (home.offsetWidth || 1);
+  const t = (axis === 'x' ? cs.gridTemplateColumns : cs.gridTemplateRows).split(' ').map(parseFloat).filter((n) => !isNaN(n)), gap = parseFloat(axis === 'x' ? cs.columnGap : cs.rowGap) || 0;
+  let pos = axis === 'x' ? hb_.left : hb_.top; const out = [];
+  t.forEach((w) => { out.push({s: pos, e: pos + w * z}); pos += (w + gap) * z; });
+  if (axis === 'y') { const avg = out.length ? out.reduce((a, o) => a + (o.e - o.s), 0) / out.length : 80; while (out.length < 10) { const last = out[out.length - 1]; out.push({s: last.e + gap * z, e: last.e + gap * z + avg}); } }
+  return out;
+}
+function spanAt(axis, secEl, p, max) {
+  const T = tracks(axis), b = secEl.getBoundingClientRect(), start = axis === 'x' ? b.left : b.top;
+  let i0 = 0, best = 1e9; T.forEach((o, i) => { const d = Math.abs(o.s - start); if (d < best) { best = d; i0 = i; } });
+  let k = 1, bd = 1e9; for (let n = 1; n <= Math.min(max, T.length - i0); n++) { const d = Math.abs(T[i0 + n - 1].e - p); if (d < bd) { bd = d; k = n; } }
+  return k;
+}
+let rs = null;
+[hr, hb].forEach((h) => { const ax = h === hr ? 'x' : 'y';
+  h.addEventListener('pointerdown', (e) => { e.preventDefault(); try { h.setPointerCapture(e.pointerId); } catch (x) { /* syntetyczne zdarzenia w tescie */ } rs = {ax, last: null}; });
+  h.addEventListener('pointermove', (e) => { if (!rs || rs.ax !== ax) return; const s = root().getElementById('s-' + SEL.sec); if (!s) return;
+    const n = spanAt(ax, s, ax === 'x' ? e.clientX : e.clientY, ax === 'x' ? 4 : 8); if (n !== rs.last) { rs.last = n; post({t: 'resize', id: SEL.sec, axis: ax, n, final: false}); } });
+  h.addEventListener('pointerup', () => { if (rs && rs.last) post({t: 'resize', id: SEL.sec, axis: rs.ax, n: rs.last, final: true}); rs = null; });
+});
+// przeciaganie (sekcje ekranu glownego, bloki i kafelki urzadzen w widoku pokoju) i zaznaczanie
+let dn = null, hov = null, drop = null, EMODE = false;
+const snap8 = (v) => Math.round(v / 8) * 8;
+const setHov = (el) => { if (hov === el) return; if (hov) hov.removeAttribute('data-hov'); hov = el; if (el) el.setAttribute('data-hov', ''); };
+const setDrop = (el) => { if (drop === el) return; if (drop) drop.removeAttribute('data-drop'); drop = el; if (el) el.setAttribute('data-drop', ''); };
+const roomEl = () => root() && root().querySelector('.roomv');
+function wire() {
+  const r = root();
+  r.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); }, true);
+  r.addEventListener('dragstart', (e) => e.preventDefault(), true);
+  r.addEventListener('pointerdown', (e) => {
+    if (e.button) return; const p = e.composedPath(), rm = roomEl();
+    if (rm && p.find((n) => n && n.dataset && n.dataset.add)) { post({t: 'adddev', room: rm.dataset.room}); e.preventDefault(); return; }
+    if (EMODE) { const key = keyOf(p); if (!key) return; const node = p.find((n) => n && n.getAttribute && n.getAttribute('data-pe') === key); if (!node) return;
+      const t = String(getComputedStyle(node).translate || '').split(' ').map(parseFloat); dn = {kind: 'el', room: hroom(p), z: (node.getBoundingClientRect().width / (node.offsetWidth || 1)) || 1, key, node, ox: t[0] || 0, oy: t[1] || 0, x0: e.clientX, y0: e.clientY, on: false}; e.preventDefault(); return; }
+    const dc = rm && p.find((n) => n && n.classList && n.classList.contains('dcard') && n.dataset.di !== undefined);
+    const bt = rm && p.find((n) => n && n.getAttribute && n.getAttribute('data-bt'));
+    const bk = rm && p.find((n) => n && n.getAttribute && n.getAttribute('data-blk'));
+    const sec = secOf(p), key = keyOf(p);
+    if (!sec && !key && !dc && !bk && !bt) return;
+    dn = {hr: hroom(p), kind: dc ? 'dev' : bt ? 'bt' : bk ? 'blk' : sec ? 'sec' : null, sec, key, di: dc ? +dc.dataset.di : null, blk: bk ? bk.getAttribute('data-blk') : null, bt: bt ? bt.getAttribute('data-bt') : null, room: rm ? rm.dataset.room : null, x0: e.clientX, y0: e.clientY, on: false};
+    e.preventDefault();
+  }, true);
+  r.addEventListener('pointermove', (e) => { if (dn) return; const p = e.composedPath(), n = p.find((x) => x && x.classList && x.classList.contains('dcard')) || p.find((x) => x && x.getAttribute && x.getAttribute('data-pe')) || p.find((x) => x && x.id && /^s-/.test(x.id)); setHov(n || null); }, true);
+  r.addEventListener('pointerleave', () => setHov(null), true);
+}
+function findTarget(e) {
+  const els = root().elementsFromPoint(e.clientX, e.clientY);
+  if (dn.kind === 'sec') { const t = els.find((x) => x.id && /^s-/.test(x.id) && x.id !== 's-' + dn.sec); return t ? {to: t.id.slice(2), el: t} : null; }
+  const near = (list) => { let best = null, bd = 1e9; list.forEach((x) => { const b = x.getBoundingClientRect(); if (b.width < 2) return; const dx = Math.max(b.left - e.clientX, 0, e.clientX - b.right), dy = Math.max(b.top - e.clientY, 0, e.clientY - b.bottom), d = Math.hypot(dx, dy * 1.5); if (d < bd) { bd = d; best = x; } }); return best; };
+  const rm = roomEl(); if (!rm) return null; const R = root();
+  if (dn.kind === 'dev') { const t = near([...R.querySelectorAll('.dcard[data-di]')].filter((x) => +x.dataset.di !== dn.di)); return t ? {to: +t.dataset.di, el: t} : null; }
+  if (dn.kind === 'bt') { const t = near([...R.querySelectorAll('[data-bt]')].filter((x) => x.dataset.bt !== dn.bt)); return t ? {to: t.dataset.bt, el: t} : null; }
+  const t = near([...R.querySelectorAll('[data-blk]')].filter((x) => x.getAttribute('data-blk') !== dn.blk)); return t ? {to: t.getAttribute('data-blk'), el: t} : null;
+}
+addEventListener('pointermove', (e) => {
+  if (!dn) return;
+  if (dn.kind === 'el') { if (!dn.on && Math.hypot(e.clientX - dn.x0, e.clientY - dn.y0) > 4) { dn.on = true; setHov(null); }
+    if (dn.on) { dn.dx = snap8(dn.ox + (e.clientX - dn.x0) / dn.z); dn.dy = snap8(dn.oy + (e.clientY - dn.y0) / dn.z); dn.node.style.translate = dn.dx + 'px ' + dn.dy + 'px'; } return; }
+  if (!dn.on && dn.kind && Math.hypot(e.clientX - dn.x0, e.clientY - dn.y0) > 8) { dn.on = true; setHov(null); ghost.style.display = 'block'; ghost.textContent = dn.kind === 'dev' ? '↕ przenieś urządzenie' : dn.kind === 'bt' ? '↕ przenieś wartość' : dn.kind === 'blk' ? '↕ przenieś blok' : '↕ przenieś sekcję'; }
+  if (dn.on) { ghost.style.left = (e.clientX + 14) + 'px'; ghost.style.top = (e.clientY + 14) + 'px'; const t = findTarget(e); dn.to = t ? t.to : null; setDrop(t ? t.el : null); }
+});
+addEventListener('pointerup', () => {
+  if (!dn) return; ghost.style.display = 'none'; setDrop(null);
+  if (dn.kind === 'el') { if (dn.on) post({t: 'elmove', key: dn.key, dx: dn.dx, dy: dn.dy, room: dn.room}); else post({t: 'sel', sec: null, el: dn.key, room: dn.room}); dn = null; return; }
+  if (dn.on) {
+    if (dn.to !== null && dn.to !== undefined) { if (dn.kind === 'sec') post({t: 'move', from: dn.sec, to: dn.to}); else if (dn.kind === 'dev') post({t: 'devmove', room: dn.room, from: dn.di, to: dn.to}); else if (dn.kind === 'bt') post({t: 'btmove', room: dn.room, from: dn.bt, to: dn.to}); else post({t: 'blkmove', room: dn.room, from: dn.blk, to: dn.to}); }
+  } else if (dn.kind === 'dev') post({t: 'devsel', room: dn.room, i: dn.di});
+  else post({t: 'sel', sec: dn.sec, el: dn.key, room: dn.hr});
+  dn = null;
+});
+addEventListener('pointercancel', () => { dn = null; ghost.style.display = 'none'; setDrop(null); });
+window.addEventListener('message', (ev) => {
+  const m = ev.data; if (!m || m.t !== 'apply') return;
+  const cfgk = JSON.stringify([m.proj]);
+  if (!card || cfgk !== lastCfg) {
+    if (card) card.remove();
+    lastCfg = cfgk; card = document.createElement('pastel-home-card'); card.setConfig(Object.assign({preview: true}, m.proj || {})); document.body.append(card);
+    wire(); lastNav = null;
+  }
+  if (m.layout) card.previewApply(m.layout);
+  if (m.states) card.hass = mk(m.states);
+  EMODE = !!m.emode; document.body.style.cursor = EMODE ? 'move' : '';
+  SEL = m.sel || {sec: null, key: null}; selCss();
+  const nav = m.nav || '';
+  if (nav !== lastNav) { lastNav = nav; location.hash = nav; }
+  requestAnimationFrame(() => { place(); setTimeout(place, 300); });
+});
+parent.postMessage({t: 'ready'}, '*');
+</script></body></html>

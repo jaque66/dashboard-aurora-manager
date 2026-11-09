@@ -1,0 +1,56 @@
+<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aurora Manager</title>
+<style>
+:root{--bg:#090c18;--t:rgba(255,255,255,.07);--bd:rgba(255,255,255,.11);--ink:#eef2ff;--ink2:#94a3c4;--a:#67e8f9;--b:#a78bfa;--ok:#34d399;--bad:#fb7185}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 Inter,system-ui,sans-serif;color:var(--ink);background:radial-gradient(700px 420px at 8% -8%,rgba(103,232,249,.17),transparent 65%),radial-gradient(640px 460px at 100% 8%,rgba(167,139,250,.2),transparent 65%),var(--bg);min-height:100vh}
+main{max-width:860px;margin:0 auto;padding:18px 16px 60px}h1{font-size:22px;margin:6px 0 2px}h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin:26px 0 8px}
+.sub{color:var(--ink2);font-size:13px}.card{background:linear-gradient(160deg,var(--t),rgba(255,255,255,.03));border:1px solid var(--bd);border-radius:18px;padding:14px 16px}
+label.r{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}label.r:last-child{border:0}label.r small{color:var(--ink2);margin-left:auto;white-space:nowrap}
+input[type=checkbox]{width:18px;height:18px;accent-color:#67e8f9}input[type=text]{background:rgba(255,255,255,.06);border:1px solid var(--bd);border-radius:12px;padding:9px 12px;color:var(--ink);width:100%;font:inherit}
+button,.btn{border:0;border-radius:12px;padding:9px 14px;font:inherit;font-weight:700;color:#07131f;background:linear-gradient(135deg,var(--a),var(--b));cursor:pointer}button.g,.btn.g{background:rgba(255,255,255,.1);color:var(--ink)}button.d{background:rgba(251,113,133,.2);color:var(--bad)}button:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.bk{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap}.bk:last-child{border:0}.bk b{word-break:break-all}.bk .m{flex:1;min-width:200px}
+#log{white-space:pre-wrap;font:13px/1.5 ui-monospace,monospace;background:rgba(0,0,0,.35);border-radius:14px;padding:12px;margin-top:12px;display:none}
+.pill{display:inline-block;border-radius:99px;padding:2px 9px;font-size:12px;background:rgba(103,232,249,.15);color:var(--a)}
+</style></head><body><main>
+<h1>Aurora Manager <span class="pill" id="ver"></span></h1><div style="margin:6px 0"><a class="btn g" href="../" style="text-decoration:none">← Edytor</a></div><div class="sub">Instalacja, kopia zapasowa i przywracanie dashboardów Aurora (Aurora)</div>
+<h2>Zainstaluj Aurorę</h2><div class="card" id="pl"></div>
+<h2>Nowy dashboard od zera</h2><div class="card"><div class="sub">Tworzy czysty dashboard Aurora z własnym układem. Styl i motyw ustawiasz potem w Ustawieniach dashboardu.</div>
+<div style="margin-top:10px"><input type="text" id="nd-name" placeholder="Nazwa dashboardu, np. Dom rodziców"></div>
+<label class="r"><input type="radio" name="ndm" value="empty" checked> Pusty (pokoje dodasz w Edytorze)</label>
+<label class="r"><input type="radio" name="ndm" value="areas"> Z obszarów Home Assistant (pokoje, czujniki i urządzenia dobierane automatycznie)</label>
+<div id="nd-areas" style="display:none;margin-left:28px"></div>
+<label class="r"><input type="checkbox" id="nd-sv" checked> Dodaj widok wygaszacza</label>
+<div class="row"><button id="nd-go">Utwórz dashboard</button></div></div>
+<h2>Nowa kopia zapasowa</h2><div class="card"><div id="grp"></div><div style="margin-top:10px" class="sub">Dashboardy do kopii:</div><div id="dsh"></div>
+<div style="margin-top:10px"><input type="text" id="note" placeholder="Notatka (opcjonalnie)"></div><div class="row"><button id="mk">Utwórz kopię</button></div></div>
+<h2>Kopie zapasowe <span class="sub" id="dir"></span></h2><div class="card" id="bks"></div>
+<div class="row"><label class="btn g">Wgraj kopię z pliku<input type="file" id="up" accept=".gz" hidden></label></div>
+<div id="log"></div></main>
+<script>
+const $=(i)=>document.getElementById(i);let S=null;
+const api=async(p,b)=>{const r=await fetch(p,b?{method:'POST',body:typeof b==='string'||b instanceof Blob?b:JSON.stringify(b)}:{});const j=await r.json().catch(()=>({error:'błąd odpowiedzi'}));if(!r.ok)throw new Error(j.error||r.status);return j};
+const say=(t)=>{const l=$('log');l.style.display='block';l.textContent=t;l.scrollIntoView({behavior:'smooth'})};
+const esc=(s)=>String(s??'').replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function picker(prefix,def){return `<div>${S.groups.map(g=>`<label class="r"><input type="checkbox" data-${prefix}="${g.id}" ${def(g)?'checked':''}> ${esc(g.name)}<small>${g.id==='dash'?g.count+' dashb.':g.count+' plików · '+g.size}</small></label>`).join('')}</div>`}
+const picked=(root,k)=>[...root.querySelectorAll(`[data-${k}]:checked`)].map(x=>x.dataset[k]);
+async function load(){S=await api('api/state');$('ver').textContent='v'+S.version;$('dir').textContent='· /config/'+S.dir;
+ $('grp').innerHTML=picker('g',g=>g.on);
+ $('dsh').innerHTML=S.dashboards.map(d=>`<label class="r"><input type="checkbox" data-d="${esc(d.url_path)}" ${d.jarvis&&d.has_config?'checked':''} ${d.has_config?'':'disabled'}> ${esc(d.title||d.url_path)}<small>/${esc(d.url_path)}</small></label>`).join('')||'<div class="sub">Brak dashboardów</div>';
+ const p=S.payload;$('pl').innerHTML=p&&p.manifest?`<div>Wbudowana kopia Aurorę: karta v${esc(p.manifest.card_version)}, ${p.manifest.files} plików, dashboardy: ${esc((p.manifest.dashboards||[]).join(', ')||'—')} <span class="sub">(${esc(p.size)}, utworzona ${esc(p.manifest.created)})</span></div>
+ <div class="sub" style="margin-top:6px">Używaj na świeżym HAOS. Przywróci kartę, dashboardy, motywy, generator i edytor. Istniejące pliki zostaną nadpisane (najpierw powstanie kopia bezpieczeństwa).</div>
+ <div class="row"><button id="inst">Zainstaluj z wbudowanej kopii</button><a class="btn g" href="api/download?name=payload.tar.gz" style="text-decoration:none">Pobierz wbudowaną kopię</a></div>`:'<div class="sub">Ta wersja dodatku nie zawiera wbudowanej kopii. Wgraj plik kopii poniżej.</div>';
+ const bi=$('inst');if(bi)bi.onclick=()=>doRestore('payload.tar.gz',p.manifest);
+ $('bks').innerHTML=S.backups.length?S.backups.map(b=>`<div class="bk"><div class="m"><b>${esc(b.name)}</b><div class="sub">${esc(b.time)} · ${esc(b.size)}${b.manifest?` · ${b.manifest.files} plików · karta v${esc(b.manifest.card_version)}${b.manifest.note?' · '+esc(b.manifest.note):''}`:''}</div></div>
+ <button data-rs="${esc(b.name)}">Przywróć</button><a class="btn g" href="api/download?name=${encodeURIComponent(b.name)}" style="text-decoration:none">Pobierz</a><button class="d" data-del="${esc(b.name)}">Usuń</button></div>`).join(''):'<div class="sub">Brak kopii</div>';
+ document.querySelectorAll('[data-rs]').forEach(x=>x.onclick=()=>doRestore(x.dataset.rs,(S.backups.find(b=>b.name===x.dataset.rs)||{}).manifest));
+ document.querySelectorAll('[data-del]').forEach(x=>x.onclick=async()=>{if(confirm('Usunąć '+x.dataset.del+'?')){await api('api/delete',{name:x.dataset.del});load()}})}
+async function doRestore(name,man){const gs=(man&&man.groups)||S.groups.filter(g=>g.on).map(g=>g.id);
+ const sel=prompt('Przywracane grupy (id oddzielone przecinkami):\n'+S.groups.map(g=>g.id+' = '+g.name).join('\n'),gs.join(','));if(sel===null)return;
+ if(!confirm('Przywrócić z '+name+'? Istniejące pliki zostaną nadpisane (powstanie kopia bezpieczeństwa).'))return;
+ say('Przywracanie…');try{const r=await api('api/restore',{name,groups:sel.split(',').map(x=>x.trim()).filter(Boolean),dashboards:[]});say(r.log.join('\n'));load()}catch(e){say('Błąd: '+e.message)}}
+$('mk').onclick=async()=>{const g=picked(document,'g');if(!g.length)return say('Zaznacz co najmniej jedną grupę');$('mk').disabled=true;try{const r=await api('api/backup',{groups:g,dashboards:picked(document,'d'),note:$('note').value});say('Utworzono: '+r.name);$('note').value='';load()}catch(e){say('Błąd: '+e.message)}$('mk').disabled=false};
+$('up').onchange=async(e)=>{const f=e.target.files[0];if(!f)return;try{await api('api/upload?name='+encodeURIComponent(f.name),f);say('Wgrano '+f.name);load()}catch(x){say('Błąd: '+x.message)}e.target.value=''};
+document.querySelectorAll('[name=ndm]').forEach(r=>r.onchange=async()=>{const a=$('nd-areas');const on=document.querySelector('[name=ndm]:checked').value==='areas';a.style.display=on?'block':'none';
+ if(on&&!a.dataset.l){a.textContent='Wczytywanie…';try{const l=await api('api/areas');a.dataset.l=1;a.innerHTML=l.map(x=>`<label class="r"><input type="checkbox" data-a="${esc(x.id)}" checked> ${esc(x.name)}<small>${x.count} encji</small></label>`).join('')||'Brak obszarów w HA'}catch(e){a.textContent='Błąd: '+e.message}}});
+$('nd-go').onclick=async()=>{const m=document.querySelector('[name=ndm]:checked').value;$('nd-go').disabled=true;try{const r=await api('api/newdash',{name:$('nd-name').value,mode:m,areas:picked(document,'a'),saver:$('nd-sv').checked});say('Utworzono dashboard /'+r.path+(m==='areas'?' (pokoje: '+r.rooms+')':'')+'\nOtwórz go z paska bocznego HA (odśwież przeglądarkę, Ctrl+F5).');load()}catch(e){say('Błąd: '+e.message)}$('nd-go').disabled=false};
+load().catch(e=>say('Błąd: '+e.message));
+</script></body></html>
