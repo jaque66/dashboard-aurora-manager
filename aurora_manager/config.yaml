@@ -1,5 +1,5 @@
 name: Aurora Manager
-version: "2.1.0"
+version: "2.2.0"
 slug: aurora_manager
 description: Aurora Manager - edytor dashboardów Aurora (układ, pokoje, progi, widoki, wygaszacz), tworzenie nowych dashboardów od zera oraz instalacja, kopie zapasowe i przywracanie.
 url: https://github.com/jaque66/dashboard-aurora-manager

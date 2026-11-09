@@ -23,8 +23,8 @@ def _bkd(pid=None):
     return BK_DIR if not pid else os.path.join(BK_DIR, pid)
 SCHEMA_V = 2
 # ten sam uklad domyslny, co DEF_HOME w make_pastel.py (generator zapisuje go tez do pastel-layout.default.json)
-DEF_HOME = {'order': ['hero', 'rooms', 'as', 'status', 'air', 'fuel', 'cal', 'links'], 'porder': ['hero', 'as', 'status', 'rooms', 'air', 'fuel', 'cal', 'links'], 'hide': [],
-            'sec': {'hero': {'w': 1, 'h': 1}, 'rooms': {'w': 3, 'h': 3}, 'as': {'w': 1, 'h': 1}, 'status': {'w': 1, 'h': 2}, 'air': {'w': 1, 'h': 1}, 'fuel': {'w': 1, 'h': 1}, 'cal': {'w': 1, 'h': 1}, 'links': {'w': 4, 'h': 1}}}
+DEF_HOME = {'order': ['hero', 'rooms', 'as', 'status', 'school', 'air', 'fuel', 'cal', 'links'], 'porder': ['hero', 'as', 'status', 'school', 'rooms', 'air', 'fuel', 'cal', 'links'], 'hide': [],
+            'sec': {'hero': {'w': 1, 'h': 1}, 'rooms': {'w': 3, 'h': 3}, 'as': {'w': 1, 'h': 1}, 'status': {'w': 1, 'h': 1}, 'school': {'w': 1, 'h': 1}, 'air': {'w': 1, 'h': 1}, 'fuel': {'w': 1, 'h': 1}, 'cal': {'w': 1, 'h': 1}, 'links': {'w': 4, 'h': 1}}}
 IDS = list(DEF_HOME['order'])
 HIDEABLE = IDS + ['today']
 MAXW, MAXH = 4, 8
@@ -33,13 +33,14 @@ ELEMENTS = {
     'hero': [('greet', 'Powitanie', 't'), ('time', 'Zegar', 't'), ('date', 'Data', 't'), ('icon', 'Ikona pogody', 't'), ('temp', 'Temperatura', 'n1'), ('desc', 'Opis pogody', 't'), ('hum', 'Wilgotność', 'n0'), ('pm', 'PM2.5', 'n0')],
     'as': [('listen', 'Przycisk „Dotknij i mów”', 't'), ('mic', 'Mikrofon', 't'), ('view', 'Przycisk historii rozmów', 't')],
     'status': [('title', 'Nagłówek sekcji', 't'), ('list', 'Lista alarmów', 't')],
+    'school': [('title', 'Nagłówek sekcji', 't'), ('list', 'Lista sprawdzianów, kartkówek i zadań', 't')],
     'rooms': [('title', 'Nagłówek sekcji', 't'), ('name', 'Nazwa pokoju', 't'), ('occ', 'Obecność (Ktoś jest / Pusto)', 't'), ('temp', 'Temperatura', 'n1'), ('hum', 'Wilgotność', 'n0'), ('lux', 'Natężenie światła', 't'),
               ('devs', 'Urządzenia', 't'), ('extra', 'Czujniki i status (drzwi, pralka…)', 't'), ('auto', 'Przycisk automatycznego gaszenia', 't'), ('wm', 'Znak wodny pokoju', 't')],
     'air': [('title', 'Nagłówek sekcji', 't'), ('ring', 'Wskaźnik PM2.5', 'n0'), ('text', 'Opis jakości', 't'), ('purifier', 'Stan oczyszczacza', 't'), ('btn', 'Przycisk oczyszczacza', 't')],
     'fuel': [('title', 'Nagłówek sekcji', 't'), ('price', 'Ceny (format liczby)', 'n2')],
     'cal': [('title', 'Nagłówek sekcji', 't'), ('list', 'Lista wydarzeń', 't')],
     'sv': [('tm', 'Zegar', 't'), ('dt', 'Data', 't'), ('tp', 'Pogoda i temperatura', 't'), ('hum', 'Wilgotność', 't'), ('al', 'Pasek alarmów', 't')],
-    'links': [('a_off', 'Światła', 'l'), ('klimat', 'Klimat', 'l'), ('multimedia', 'Multimedia', 'l'), ('a_alarm', 'Alarm', 'l'), ('plan2d', 'Plan Mieszkania', 'l'), ('baterie', 'Baterie', 'l'), ('f1', 'Formuła 1', 'l'), ('serwer', 'Serwer', 'l'), ('dziennik', 'Historia', 'l'), ('ustawienia', 'Ustawienia', 'l')],
+    'links': [('a_off', 'Światła', 'l'), ('klimat', 'Klimat', 'l'), ('multimedia', 'Multimedia', 'l'), ('a_alarm', 'Alarm', 'l'), ('plan2d', 'Plan Mieszkania', 'l'), ('baterie', 'Baterie', 'l'), ('f1', 'Formuła 1', 'l'), ('transport', 'Transport', 'l'), ('szkola', 'Szkoła', 'l'), ('serwer', 'Serwer', 'l'), ('dziennik', 'Historia', 'l'), ('ustawienia', 'Ustawienia', 'l')],
 }
 # widoki szczegolowe: bloki, ktore mozna ukryc i ostylowac (klucz data-pe = <widok>.<blok>)
 VIEWS = {
@@ -49,6 +50,7 @@ VIEWS = {
     'klimat': ('Klimat', [('hdr', 'Nagłówek'), ('cards', 'Kafelki pokoi'), ('foot', 'Stopka z zakresem komfortu')]),
     'powietrze': ('Powietrze', [('hdr', 'Nagłówek'), ('card', 'Wskaźnik jakości'), ('pur', 'Oczyszczacz'), ('chart', 'Wykres PM2.5')]),
     'serwer': ('Serwer', [('hdr', 'Nagłówek'), ('nodes', 'Węzły'), ('guests', 'Maszyny i kontenery'), ('stor', 'Magazyny')]),
+    'tr': ('Transport', [('hdr', 'Nagłówek'), ('routes', 'Zapisane połączenia'), ('search', 'Wyszukiwarka połączeń')]),
     'szk': ('Szkoła', [('hdr', 'Nagłówek'), ('tiles', 'Podsumowanie (średnia, ostatnia ocena, frekwencja…)'), ('plan', 'Plan lekcji'), ('chgs', 'Zmiany w planie'), ('duty', 'Sprawdziany i zadania'), ('gr', 'Oceny'), ('att', 'Frekwencja'), ('foot', 'Stopka z synchronizacją')]),
     'f1': ('Formuła 1', [('hdr', 'Nagłówek'), ('next', 'Następny wyścig'), ('weather', 'Pogoda na torze'), ('last', 'Ostatni wyścig'), ('drivers', 'Klasyfikacja kierowców'), ('teams', 'Klasyfikacja zespołów'), ('radio', 'Team radio')]),
 }

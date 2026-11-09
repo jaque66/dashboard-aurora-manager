@@ -14,6 +14,7 @@ const SEC = {
   rooms: {n: 'Pokoje', d: 'Kafelki pokoi i urządzeń', c: '#ffe0d2'},
   as: {n: 'Asystent', d: 'Przycisk „Dotknij i mów”', c: '#d6ebff'},
   status: {n: 'Alarmy i ostrzeżenia', d: 'Lista alarmów (Tauron, klimat, baterie…)', c: '#ffd9e6'},
+  school: {n: 'Szkoła', d: 'Sprawdziany, kartkówki i zadania domowe', c: '#ffe9c7'},
   air: {n: 'Powietrze', d: 'Jakość powietrza i oczyszczacz', c: '#cdf2ee'},
   fuel: {n: 'Paliwa', d: 'Ceny maksymalne', c: '#fff1c2'},
   cal: {n: 'Najbliższe wydarzenia', d: 'Kalendarz i przypomnienia', c: '#e4dcff'},
@@ -28,7 +29,7 @@ let view = 'uklad', sel = null, dev = 'tablet', selEl = null;
 const FONTS = ['Manrope', 'JetBrains Mono', 'Serif', 'Zaokrąglona'];
 const elOf = k => { const o = (H().el = H().el || {}); return o[k]; };
 const catOf = sec => ((D && D.catalog && (D.catalog[sec] || (D.catalog.views || {})[sec])) || []);
-const VNAMES = {sv: 'Wygaszacz', rv: 'Pomieszczenia', stan: 'Stan domu', bat: 'Baterie', klimat: 'Klimat', powietrze: 'Powietrze', serwer: 'Serwer', f1: 'Formuła 1', szk: 'Szkoła'};
+const VNAMES = {sv: 'Wygaszacz', rv: 'Pomieszczenia', stan: 'Stan domu', bat: 'Baterie', klimat: 'Klimat', powietrze: 'Powietrze', serwer: 'Serwer', f1: 'Formuła 1', szk: 'Szkoła', tr: 'Transport'};
 const secName = s => (SEC[s] || {n: VNAMES[s] || s}).n;
 let selView = 'rv';
 
@@ -85,7 +86,7 @@ async function liveStates(force) {
   if (!force && LIVE.states && Date.now() - LIVE.at < 20000) return;
   try { LIVE.states = await api('pastel/states'); LIVE.at = Date.now(); livePost(); } catch (e) { /* podglad pokaze to, co ma */ }
 }
-const VIEW_NAV = {stan: 'stan-domu', bat: 'baterie', klimat: 'klimat', powietrze: 'powietrze', serwer: 'serwer', f1: 'f1', szk: 'szkola'};
+const VIEW_NAV = {stan: 'stan-domu', bat: 'baterie', klimat: 'klimat', powietrze: 'powietrze', serwer: 'serwer', f1: 'f1', szk: 'szkola', tr: 'transport'};
 function liveNav() {
   if (view === 'pokoje') { const r = curRoom(); return r ? 'pokoj-' + r.id : ''; }
   if (view !== 'wid') return '';
