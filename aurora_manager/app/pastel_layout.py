@@ -49,6 +49,7 @@ VIEWS = {
     'klimat': ('Klimat', [('hdr', 'Nagłówek'), ('cards', 'Kafelki pokoi'), ('foot', 'Stopka z zakresem komfortu')]),
     'powietrze': ('Powietrze', [('hdr', 'Nagłówek'), ('card', 'Wskaźnik jakości'), ('pur', 'Oczyszczacz'), ('chart', 'Wykres PM2.5')]),
     'serwer': ('Serwer', [('hdr', 'Nagłówek'), ('nodes', 'Węzły'), ('guests', 'Maszyny i kontenery'), ('stor', 'Magazyny')]),
+    'szk': ('Szkoła', [('hdr', 'Nagłówek'), ('tiles', 'Podsumowanie (średnia, ostatnia ocena, frekwencja…)'), ('plan', 'Plan lekcji'), ('chgs', 'Zmiany w planie'), ('duty', 'Sprawdziany i zadania'), ('gr', 'Oceny'), ('att', 'Frekwencja'), ('foot', 'Stopka z synchronizacją')]),
     'f1': ('Formuła 1', [('hdr', 'Nagłówek'), ('next', 'Następny wyścig'), ('weather', 'Pogoda na torze'), ('last', 'Ostatni wyścig'), ('drivers', 'Klasyfikacja kierowców'), ('teams', 'Klasyfikacja zespołów'), ('radio', 'Team radio')]),
 }
 # globalne warianty wygladu kart: klucz -> (nazwa, dozwolone wartosci, domyslna = dzisiejszy wyglad)

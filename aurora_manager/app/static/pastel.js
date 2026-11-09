@@ -28,7 +28,7 @@ let view = 'uklad', sel = null, dev = 'tablet', selEl = null;
 const FONTS = ['Manrope', 'JetBrains Mono', 'Serif', 'Zaokrąglona'];
 const elOf = k => { const o = (H().el = H().el || {}); return o[k]; };
 const catOf = sec => ((D && D.catalog && (D.catalog[sec] || (D.catalog.views || {})[sec])) || []);
-const VNAMES = {sv: 'Wygaszacz', rv: 'Pomieszczenia', stan: 'Stan domu', bat: 'Baterie', klimat: 'Klimat', powietrze: 'Powietrze', serwer: 'Serwer', f1: 'Formuła 1'};
+const VNAMES = {sv: 'Wygaszacz', rv: 'Pomieszczenia', stan: 'Stan domu', bat: 'Baterie', klimat: 'Klimat', powietrze: 'Powietrze', serwer: 'Serwer', f1: 'Formuła 1', szk: 'Szkoła'};
 const secName = s => (SEC[s] || {n: VNAMES[s] || s}).n;
 let selView = 'rv';
 
@@ -85,7 +85,7 @@ async function liveStates(force) {
   if (!force && LIVE.states && Date.now() - LIVE.at < 20000) return;
   try { LIVE.states = await api('pastel/states'); LIVE.at = Date.now(); livePost(); } catch (e) { /* podglad pokaze to, co ma */ }
 }
-const VIEW_NAV = {stan: 'stan-domu', bat: 'baterie', klimat: 'klimat', powietrze: 'powietrze', serwer: 'serwer', f1: 'f1'};
+const VIEW_NAV = {stan: 'stan-domu', bat: 'baterie', klimat: 'klimat', powietrze: 'powietrze', serwer: 'serwer', f1: 'f1', szk: 'szkola'};
 function liveNav() {
   if (view === 'pokoje') { const r = curRoom(); return r ? 'pokoj-' + r.id : ''; }
   if (view !== 'wid') return '';

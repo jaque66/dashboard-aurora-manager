@@ -9,7 +9,7 @@ DATA = os.environ.get("JM_DATA", "/data")
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAYLOAD = os.path.join(os.path.dirname(HERE), "payload", "aurora-payload.tar.gz")
 PORT = int(os.environ.get("JM_PORT", "8100"))
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 
 def options():
