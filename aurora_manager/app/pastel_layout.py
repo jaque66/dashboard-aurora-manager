@@ -40,7 +40,7 @@ ELEMENTS = {
     'fuel': [('title', 'Nagłówek sekcji', 't'), ('price', 'Ceny (format liczby)', 'n2')],
     'cal': [('title', 'Nagłówek sekcji', 't'), ('list', 'Lista wydarzeń', 't')],
     'sv': [('tm', 'Zegar', 't'), ('dt', 'Data', 't'), ('tp', 'Pogoda i temperatura', 't'), ('hum', 'Wilgotność', 't'), ('al', 'Pasek alarmów', 't')],
-    'links': [('a_off', 'Światła', 'l'), ('klimat', 'Klimat', 'l'), ('multimedia', 'Multimedia', 'l'), ('a_alarm', 'Alarm', 'l'), ('plan2d', 'Plan Mieszkania', 'l'), ('baterie', 'Baterie', 'l'), ('f1', 'Formuła 1', 'l'), ('transport', 'Transport', 'l'), ('szkola', 'Szkoła', 'l'), ('serwer', 'Serwer', 'l'), ('dziennik', 'Historia', 'l'), ('ustawienia', 'Ustawienia', 'l')],
+    'links': [('a_off', 'Światła', 'l'), ('klimat', 'Klimat', 'l'), ('multimedia', 'Multimedia', 'l'), ('a_alarm', 'Alarm', 'l'), ('plan2d', 'Plan Mieszkania', 'l'), ('baterie', 'Baterie', 'l'), ('f1', 'Formuła 1', 'l'), ('transport', 'Transport', 'l'), ('serwer', 'Serwer', 'l'), ('dziennik', 'Historia', 'l'), ('ustawienia', 'Ustawienia', 'l')],
 }
 # widoki szczegolowe: bloki, ktore mozna ukryc i ostylowac (klucz data-pe = <widok>.<blok>)
 VIEWS = {
