@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.1.1 – 2026-11-27
+
+**PL**
+- Karta Aurora Pulse: **procent jasności** na kafelkach włączonych świateł z regulacją jasności (i w widoku pokoju).
+
+**EN**
+- Aurora Pulse card: **brightness percentage** on the tiles of lights that are on and dimmable (and in the room view).
+
 ## 3.1.0 – 2026-11-27
 
 **PL**
