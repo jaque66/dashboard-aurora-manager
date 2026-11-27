@@ -1,5 +1,7 @@
 # Aurora Manager – dodatek do Home Assistant OS / Home Assistant add-on
 
+**▶ Demo online / Live demo: https://jaque66.github.io/aurora-demo/**
+
 🇵🇱 [Polski](#polski) · 🇬🇧 [English](#english) · [Changelog](aurora_manager/CHANGELOG.md)
 
 ---
