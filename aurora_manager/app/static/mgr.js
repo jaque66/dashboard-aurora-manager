@@ -14,7 +14,7 @@ const SCHEMES = [['', 'Domyślna (Aurora)', '#67e8f9,#a78bfa,#f472b6'], ['ocean'
   ['arctic', 'Arktyka', '#bae6fd,#7dd3fc,#e0f2fe'], ['pulse', 'Pulse', '#67e8f9,#a78bfa,#f472b6'], ['neon', 'Neon', '#4ade80,#22d3ee,#e879f9']];
 const ROOMC = ['lav', 'peach', 'butter', 'rose', 'sky', 'aqua', 'mint', 'sand'];
 const ROOMCC = {lav: '#8f78e0', peach: '#f08a5d', butter: '#d9a521', rose: '#e5719a', sky: '#5a9be0', aqua: '#35aaa0', mint: '#3fb27f', sand: '#b58a5e'};
-const STEPS = [['start', '1 · Start'], ['rooms', '2 · Pokoje'], ['home', '3 · Dom'], ['main', '4 · Ekran główny'], ['nav', '5 · Dock i menu'], ['save', '6 · Zapis']];
+const STEPS = [['start', '1 · Start'], ['rooms', '2 · Pokoje'], ['home', '3 · Dom'], ['modules', '4 · Moduły'], ['main', '5 · Ekran główny'], ['nav', '6 · Dock i menu'], ['save', '7 · Zapis']];
 
 let INFO = null, CAT = null, D = null, STEP = 'start', LIST = [], SAVED = null;
 const grad = (c) => 'linear-gradient(135deg,' + c + ')';
@@ -43,16 +43,18 @@ async function cardsBox() {
   try {
     CAT = CAT || await api('api/catalog'); const c = CAT.cards, box = $('#cardsbox'); if (!box) return;
     const row = (n, t) => { const s = c[n]; return `<div class="row"><b>${t}</b><span class="sub">${s.foreign ? 'zainstalowana inną drogą – Manager jej nie zmienia' : s.managed ? (s.current ? '<span class="ok">aktualna</span>' : '<span class="warn">jest nowsza wersja w dodatku</span>') : '<span class="warn">nie zainstalowana</span>'}</span></div>`; };
-    box.innerHTML = row('pastel-home-card.js', 'Aurora (karta bazowa)') + row('aurora-pulse-card.js', 'Aurora Pulse') + '<div class="row" style="margin-top:10px"><button class="s g" id="inst">Zainstaluj / zaktualizuj karty</button></div><div class="sub" style="margin-top:6px">Karty instalują się też automatycznie przy zapisie dashboardu.</div>';
+    box.innerHTML = row('aurora-pulse-card.js', 'Aurora Pulse') + '<div class="row" style="margin-top:10px"><button class="s g" id="inst">Zainstaluj / zaktualizuj karty</button></div><div class="sub" style="margin-top:6px">Karty instalują się też automatycznie przy zapisie dashboardu.</div>';
     $('#inst').onclick = async () => { try { const r = await api('api/cards/install', {body: {}}); CAT.cards = r.cards; toast(r.messages.join(' ')); cardsBox(); } catch (e) { toast('Błąd: ' + e.message); } };
   } catch (e) { const b = $('#cardsbox'); if (b) b.innerHTML = '<span class="err">' + esc(e.message) + '</span>'; }
 }
 
 /* ---------------- kreator ---------------- */
-const blank = () => ({id: '', name: '', path: '', theme: 'auto', scheme: '', w: 1280, h: 800, areas: [], cfg: null, blocks: {order: INFO.blocks.map((b) => b.id), hide: []}, nav: {dock: ['lights', 'events'], tdock: ['rooms', 'klimat', 'multimedia', 'events', 'pogoda', 'powietrze'], menu: INFO.views.map((v) => v.id).filter((v) => !['ustawienia', 'asystent'].includes(v))}});
+const modViews = () => INFO.modules.flatMap((m) => m.views);
+const modOf = (v) => (INFO.modules.find((m) => m.views.includes(v)) || {}).id;
+const blank = () => ({id: '', name: '', path: '', theme: 'auto', scheme: '', w: 1280, h: 800, areas: [], cfg: null, blocks: {order: INFO.blocks.map((b) => b.id), hide: []}, modules: [], nav: {dock: ['lights', 'events'], tdock: ['rooms', 'klimat', 'multimedia', 'events', 'pogoda', 'powietrze'], menu: INFO.views.map((v) => v.id).filter((v) => !['ustawienia', 'asystent'].includes(v) && !modViews().includes(v))}});
 async function loadCat() { if (!CAT || !CAT.areas) CAT = await api('api/catalog'); else { try { CAT = await api('api/catalog'); } catch (e) { /* zostaw stary */ } } }
 async function startNew() { D = blank(); STEP = 'start'; $('#app').innerHTML = '<div class="card">Wczytywanie obszarów Home Assistanta…</div>'; try { await loadCat(); } catch (e) { toast('Błąd: ' + e.message); return showList(); } render(); }
-async function startEdit(id) { try { D = await api('api/dashboards/' + encodeURIComponent(id)); } catch (e) { return toast('Błąd: ' + e.message); } D.areas = D.areas || []; D.blocks = D.blocks || blank().blocks; D.nav = Object.assign(blank().nav, D.nav || {}); D.scheme = D.scheme || ''; STEP = 'start'; $('#app').innerHTML = '<div class="card">Wczytywanie…</div>'; try { await loadCat(); } catch (e) { toast('Błąd: ' + e.message); return showList(); } render(); }
+async function startEdit(id) { try { D = await api('api/dashboards/' + encodeURIComponent(id)); } catch (e) { return toast('Błąd: ' + e.message); } D.areas = D.areas || []; D.blocks = D.blocks || blank().blocks; D.nav = Object.assign(blank().nav, D.nav || {}); D.scheme = D.scheme || ''; if (!Array.isArray(D.modules)) { const all = [].concat(D.nav.menu || [], D.nav.dock || [], D.nav.tdock || []); D.modules = INFO.modules.filter((m) => m.views.some((v) => all.includes(v)) || (m.id === 'f1' && D.cfg.f1 && D.cfg.f1.on) || (m.id === 'guard' && (D.cfg.guard || []).length)).map((m) => m.id); } STEP = 'start'; $('#app').innerHTML = '<div class="card">Wczytywanie…</div>'; try { await loadCat(); } catch (e) { toast('Błąd: ' + e.message); return showList(); } render(); }
 
 function render() {
   const idx = STEPS.findIndex((s) => s[0] === STEP), app = $('#app');
@@ -62,7 +64,7 @@ function render() {
   $('#prev').onclick = () => idx > 0 && go(STEPS[idx - 1][0]);
   const nx = $('#next'); if (nx) nx.onclick = () => go(STEPS[idx + 1][0]);
   const sv = $('#save'); if (sv) sv.onclick = doSave;
-  ({start: stepStart, rooms: stepRooms, home: stepHome, main: stepMain, nav: stepNav, save: stepSave})[STEP]($('#step'));
+  ({start: stepStart, rooms: stepRooms, home: stepHome, modules: stepModules, main: stepMain, nav: stepNav, save: stepSave})[STEP]($('#step'));
   window.scrollTo(0, 0);
 }
 async function go(s) {
@@ -70,7 +72,7 @@ async function go(s) {
     if (!D.name.trim()) return toast('Podaj nazwę dashboardu.');
     if (!D.areas.length) return toast('Wybierz co najmniej jeden obszar (pokój).');
     $('#step').innerHTML = '<div class="card">Dobieram encje z wybranych obszarów…</div>';
-    try { const p = await api('api/propose', {body: {areas: D.areas}}); D.cfg = p.cfg; D.nav = p.nav; D.blocks = p.blocks; CAT.views = p.views; } catch (e) { toast('Błąd: ' + e.message); return render(); }
+    try { const p = await api('api/propose', {body: {areas: D.areas}}); D.cfg = p.cfg; D.nav = p.nav; D.blocks = p.blocks; D.modules = p.modules || []; CAT.views = p.views; } catch (e) { toast('Błąd: ' + e.message); return render(); }
   }
   if (STEP === 'start') { const n = $('#nm'); if (n) D.name = n.value; }
   STEP = s; render();
@@ -141,8 +143,7 @@ function stepHome(el) {
   el.innerHTML = `<h2>Pogoda i powietrze</h2><div class="card"><div class="two">${one('weather', 'Pogoda (prognoza)', g.weather, () => c.out.weather, 0)}${one('out.t', 'Temperatura na zewnątrz', g.temp, () => c.out.t, 0, '— z pogody —')}${one('out.h', 'Wilgotność na zewnątrz', g.hum, () => c.out.h, 0, '— z pogody —')}${one('pm', 'Czujnik PM2.5', g.pm, () => c.pm, 0)}${one('purifier', 'Oczyszczacz powietrza', g.purifier, () => c.purifier, 0)}</div></div>
     <h2>Bezpieczeństwo</h2><div class="card"><div class="two">${one('door', 'Drzwi wejściowe', g.door, () => c.door, 0)}${one('gas', 'Czujnik gazu / dymu', g.gas, () => c.gas, 0)}${one('floodK', 'Czujnik zalania 1', g.flood, () => c.floodK, 0)}${one('floodL', 'Czujnik zalania 2', g.flood, () => c.floodL, 0)}${one('alarm', 'Stan alarmu (opcjonalnie)', g.alarm, () => c.alarm, 0)}${one('alarmSw', 'Wyłącznik alarmu (opcjonalnie)', g.alarmsw, () => c.alarmSw, 0)}</div><div class="sub" style="margin-top:6px">Alarm: encja select/sensor, której stan inny niż „normal” oznacza alarm. Pomiń, jeśli nie masz takiej.</div></div>
     ${multi('Kalendarze (Wydarzenia)', g.calendar, c.cal, 'cal')}${multi('Światła na ekranie głównym i „Zgaś światła”', g.light, c.lightsOff || [], 'lightsOff')}
-    ${multi('Odtwarzacze w Radiu', g.media, c.radioPlayers || [], 'radioPlayers')}${checksHtml()}${batHtml()}
-    <h2>Funkcje</h2><div class="card"><label class="c"><input type="checkbox" id="f1on" ${c.f1 && c.f1.on ? 'checked' : ''} ${CAT.views.f1.ok ? '' : 'disabled'}>Formuła 1<small>${CAT.views.f1.ok ? 'integracja wykryta' : esc(CAT.views.f1.why)}</small></label></div>`;
+    ${checksHtml()}${batHtml()}`;
   const setp = (k, v) => { if (k.includes('.')) { const [a, b] = k.split('.'); c[a][b] = v; } else c[k] = v; };
   $$('[data-hk]', el).forEach((s) => s.onchange = () => setp(s.dataset.hk, s.value));
   const setMk = (k) => { const vis = $$(`[data-mk="${k}"]`, el), ids = vis.map((x) => x.value); c[k] = (c[k] || []).filter((x) => !ids.includes(x)).concat(vis.filter((x) => x.checked).map((x) => x.value)); if (k === 'lightsOff') D._lightsTouched = true; };
@@ -153,10 +154,30 @@ function stepHome(el) {
   const bc = $('#bat-clean', el); if (bc) bc.onclick = () => { const all = CAT.g.battery, bad = (id) => { const b = all.find((x) => x.id === id); return !b || b.junk || ['unavailable', 'unknown'].includes(b.state); }; c.bats = c.bats.filter((id) => !bad(id)); stepHome(el); };
   const bq = $('#bq', el); if (bq) bq.onchange = () => { D._bq = bq.value; stepHome(el); };
   const bj = $('#bj', el); if (bj) bj.onchange = () => { D._bj = bj.checked; stepHome(el); };
-  $('#f1on', el).onchange = (e) => { c.f1 = {on: e.target.checked}; };
 }
 
-/* 4. Ekran glowny */
+/* 4. Moduly opcjonalne */
+function stepModules(el) {
+  const c = D.cfg, g = CAT.g, mods = D.modules = D.modules || [], det = (id) => (CAT.modules || {})[id] || {ok: true};
+  c.guard = c.guard || []; c.radioPlayers = c.radioPlayers || [];
+  const extra = (m) => {
+    if (!mods.includes(m.id)) return '';
+    if (m.id === 'radio') return `<label class="f">Odtwarzacze, na których gra radio</label>${g.media.map((x) => `<label class="c"><input type="checkbox" data-rp="${esc(x.id)}" ${c.radioPlayers.includes(x.id) ? 'checked' : ''}>${esc(x.name)}<small>${esc(x.id)}</small></label>`).join('') || '<div class="sub">Brak odtwarzaczy w Home Assistant.</div>'}`;
+    if (m.id === 'guard') return `<label class="f">Dzieci z telefonem Aurora Guard (identyfikator = końcówka encji, np. „ola” dla sensor.aurora_guard_ola_status)</label>${c.guard.map((k, i) => `<div class="row"><input type="text" data-gid="${i}" value="${esc(k.id)}" placeholder="id (małe litery)" style="max-width:160px"><input type="text" data-gnm="${i}" value="${esc(k.name)}" placeholder="imię" style="max-width:200px"><button class="s d" data-grm="${i}">Usuń</button></div>`).join('')}<div class="row" style="margin-top:6px"><button class="s g" id="gadd">+ Dodaj dziecko</button></div>`;
+    return '';
+  };
+  el.innerHTML = `<div class="sub" style="margin-bottom:10px">Podstawowy dashboard (pokoje, światła, klimat, pogoda, kalendarz, baterie, multimedia) działa bez dodatkowych integracji. Poniższe moduły są opcjonalne – włącz tylko te, które masz skonfigurowane. Przy każdym opisano, czego wymaga.</div>` + INFO.modules.map((m) => { const d = det(m.id), on = mods.includes(m.id);
+    return `<div class="card" style="margin-bottom:10px"><label class="c"><input type="checkbox" data-md="${m.id}" ${on ? 'checked' : ''}><b>${esc(m.name)}</b><small>${d.ok ? '<span class="ok">wykryto w Home Assistant</span>' : '<span class="warn">nie wykryto: ' + esc(d.why || '') + '</span>'}</small></label>
+      <div class="sub" style="margin:2px 0 6px 28px">${esc(m.desc)}</div><div class="sub" style="margin-left:28px;border-left:3px solid var(--a);padding-left:8px">ℹ ${esc(m.need)}</div>${on && !d.ok ? '<div class="warn" style="margin:6px 0 0 28px">Moduł jest włączony, ale wymagane elementy nie zostały wykryte – widok może być pusty, dopóki ich nie skonfigurujesz.</div>' : ''}<div style="margin-left:28px">${extra(m)}</div></div>`; }).join('');
+  $$('[data-md]', el).forEach((cb) => cb.onchange = () => { const id = cb.dataset.md; D.modules = mods.filter((x) => x !== id); if (cb.checked) { D.modules.push(id); if (id === 'guard' && !c.guard.length) c.guard.push({id: '', name: ''}); } stepModules(el); });
+  $$('[data-rp]', el).forEach((cb) => cb.onchange = () => { c.radioPlayers = c.radioPlayers.filter((x) => x !== cb.dataset.rp); if (cb.checked) c.radioPlayers.push(cb.dataset.rp); });
+  $$('[data-gid]', el).forEach((i) => i.oninput = () => { c.guard[+i.dataset.gid].id = i.value.toLowerCase().replace(/[^a-z0-9_]/g, ''); });
+  $$('[data-gnm]', el).forEach((i) => i.oninput = () => { c.guard[+i.dataset.gnm].name = i.value; });
+  $$('[data-grm]', el).forEach((b) => b.onclick = () => { c.guard.splice(+b.dataset.grm, 1); stepModules(el); });
+  const ga = $('#gadd', el); if (ga) ga.onclick = () => { c.guard.push({id: '', name: ''}); stepModules(el); };
+}
+
+/* 5. Ekran glowny */
 function stepMain(el) {
   const B = D.blocks, nm = Object.fromEntries(INFO.blocks.map((b) => [b.id, b])), vis = B.order.filter((id) => !B.hide.includes(id));
   el.innerHTML = `<div class="cols"><div><div class="sub" style="margin-bottom:8px">Co ma być na ekranie głównym. Na telefonie bloki układają się jeden pod drugim w tej kolejności; na tablecie siatka jest ułożona automatycznie (ukryte bloki znikają).</div><div class="list">${B.order.map((id, i) => `<div class="it ${B.hide.includes(id) ? 'off' : ''}"><input type="checkbox" data-bt="${id}" ${B.hide.includes(id) ? '' : 'checked'}><b>${esc(nm[id].name)}</b><button class="s g" data-bu="${i}">↑</button><button class="s g" data-bd="${i}">↓</button></div>`).join('')}</div></div>
@@ -171,7 +192,7 @@ const viewMeta = () => Object.fromEntries(INFO.views.concat(INFO.dockExtra).map(
 function dockItems() { const N = D.nav, M = viewMeta(), seq = ['home'].concat(N.dock.slice(0, 3)), half = Math.ceil(seq.length / 2), cell = (id) => id === 'home' ? '⌂<br>Dom' : `${esc((M[id] || {name: id}).name)}`; return {seq, half, cell}; }
 function dockMock() { const {seq, half, cell} = dockItems(); return `<div class="dk">${seq.slice(0, half).map((id) => `<div>${cell(id)}</div>`).join('')}<div class="o"></div>${seq.slice(half).map((id) => `<div>${cell(id)}</div>`).join('')}<div>Więcej</div></div>`; }
 function stepNav(el) {
-  const N = D.nav, M = viewMeta(), ok = (id) => !CAT.views[id] || CAT.views[id].ok, why = (id) => (CAT.views[id] || {}).why || '';
+  const N = D.nav, M = viewMeta(), ok = (id) => (!modOf(id) || (D.modules || []).includes(modOf(id))) && (!CAT.views[id] || CAT.views[id].ok), why = (id) => (modOf(id) && !(D.modules || []).includes(modOf(id))) ? 'moduł wyłączony (krok Moduły)' : (CAT.views[id] || {}).why || '';
   const phoneOpts = INFO.dockExtra.concat(INFO.views.filter((v) => !['ustawienia', 'asystent', 'kalendarz'].includes(v.id)));
   const tabOpts = phoneOpts.filter((v) => v.id !== 'lights').concat([]);
   const chips = (opts, cur, key, max) => `<div class="chips">${opts.map((v) => `<button data-nk="${key}" data-id="${v.id}" class="${cur.includes(v.id) ? 'on' : ''}" ${(!ok(v.id) || (!cur.includes(v.id) && cur.length >= max)) ? 'disabled' : ''} title="${esc(ok(v.id) ? '' : why(v.id))}">${esc(v.name)}</button>`).join('')}</div>`;
@@ -198,7 +219,7 @@ function stepSave(el) {
   if (!c.out.weather) miss.push('brak encji pogody (ekran główny pokaże „—”)'); if (!c.rooms.some((r) => r.t)) miss.push('żaden pokój nie ma czujnika temperatury');
   el.innerHTML = `<div class="card"><h3>${esc(D.name || 'Dashboard')}</h3><div class="sub">Adres: /${esc(D.path || 'aurora-' + (D.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-'))} · motyw: ${esc((THEMES[D.theme] || [D.theme])[0])}${D.scheme ? ' · kolorystyka: ' + esc(D.scheme) : ''}</div>
     <ul><li>Pokoje: ${c.rooms.map((r) => esc(r.name)).join(', ')}</li><li>Ekran główny: ${D.blocks.order.filter((x) => !D.blocks.hide.includes(x)).map((x) => esc(INFO.blocks.find((b) => b.id === x).name)).join(' → ')}</li>
-    <li>Dock telefonu: Dom, ${D.nav.dock.map((x) => esc((viewMeta()[x] || {name: x}).name)).join(', ') || '—'}, Więcej</li><li>Menu „Więcej”: ${D.nav.menu.map((x) => esc((viewMeta()[x] || {name: x}).name)).join(', ') || '—'}</li></ul>
+    <li>Moduły opcjonalne: ${(D.modules || []).map((x) => esc((INFO.modules.find((m) => m.id === x) || {name: x}).name)).join(', ') || 'brak (dashboard podstawowy)'}</li><li>Dock telefonu: Dom, ${D.nav.dock.map((x) => esc((viewMeta()[x] || {name: x}).name)).join(', ') || '—'}, Więcej</li><li>Menu „Więcej”: ${D.nav.menu.map((x) => esc((viewMeta()[x] || {name: x}).name)).join(', ') || '—'}</li></ul>
     ${miss.length ? '<div class="warn">Uwaga: ' + miss.map(esc).join('; ') + '.</div>' : ''}</div>
     <div class="sub">Zapis utworzy (lub zaktualizuje) dashboard w Home Assistant oraz zainstaluje potrzebne karty, jeśli ich jeszcze nie ma. Po zapisie odśwież dashboard na urządzeniu.</div><div id="res"></div>`;
 }

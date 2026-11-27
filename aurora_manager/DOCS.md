@@ -9,23 +9,24 @@
 ## Możliwości konfiguratora (6 kroków)
 1. **Start** – nazwa dashboardu, wybór obszarów Home Assistanta (pomieszczeń), **motyw** i (dla motywu Standardowego) kolorystyka.
 2. **Pokoje** – dla każdego pomieszczenia: nazwa, ikona, kolor kafelka, czujniki (temperatura, wilgotność, obecność/ruch, natężenie światła) oraz **urządzenia** (światła, gniazdka, odtwarzacze, wentylatory, rolety) z własnymi etykietami. Pokoje można przestawiać, usuwać i dodawać z kolejnych obszarów.
-3. **Dom** – encje wspólne: pogoda i czujniki zewnętrzne, PM2.5 i oczyszczacz powietrza, drzwi wejściowe, gaz/dym, zalanie, alarm (opcjonalnie), kalendarze wydarzeń, **światła** na ekranie głównym i „Zgaś światła”, odtwarzacze Radia, baterie, Formuła 1.
-4. **Ekran główny** – które bloki są widoczne (zegar, pogoda, puls domu, „Teraz”, szkoła, pokoje, światła) i w jakiej kolejności; podgląd kolejności na telefonie. Na tablecie siatka układa się automatycznie.
-5. **Dock i menu** – do 3 skrótów w dolnym docku telefonu (obok stałych „Dom” i „Więcej”), osobna lista skrótów na pasku bocznym tabletu oraz **zawartość i kolejność menu „Więcej”**. Widoki, których integracji brakuje (np. Vulcan, F1, Radio PL, TV Guide), są wyszarzone z podaniem powodu.
-6. **Zapis** – utworzenie lub aktualizacja dashboardu (adres `/aurora-…`) z widokami **Dom** i **Wygaszacz**. Można go potem w każdej chwili otworzyć ponownie w konfiguratorze i poprawić.
+3. **Dom** – encje wspólne: pogoda i czujniki zewnętrzne, PM2.5 i oczyszczacz powietrza, drzwi wejściowe, gaz/dym, zalanie, alarm (opcjonalnie), kalendarze wydarzeń, **światła** na ekranie głównym i „Zgaś światła”, odtwarzacze Radia, baterie.
+4. **Moduły opcjonalne** – dashboard podstawowy działa bez dodatkowych integracji. Moduły **Radio**, **Program TV**, **Zadania**, **Formuła 1** i **Aurora Guard** włączasz tylko wtedy, gdy masz to, czego wymagają (przy każdym w kreatorze jest notatka z wymaganiami i informacja, czy Manager to wykrył): Radio – integracja Radio PL i karta radio-pl-card; Program TV – integracja TV Guide, karta tv-guide i plik `www/jarvis/tv-guide-config.json`; Zadania – listy `todo.zadania_<dziecko>` (Local To-do); Formuła 1 – integracja F1 Sensor; **Aurora Guard – aplikacja Android Aurora Guard na telefonie dziecka** (github.com/jaque66/aurora-guard) oraz helpery, szablony i listy todo z katalogu `homeassistant/` tamtego repozytorium.
+5. **Ekran główny** – które bloki są widoczne (zegar, pogoda, puls domu, „Teraz”, szkoła, pokoje, światła) i w jakiej kolejności; podgląd kolejności na telefonie. Na tablecie siatka układa się automatycznie.
+6. **Dock i menu** – do 3 skrótów w dolnym docku telefonu (obok stałych „Dom” i „Więcej”), osobna lista skrótów na pasku bocznym tabletu oraz **zawartość i kolejność menu „Więcej”**. Widoki wyłączonych modułów lub bez wymaganej integracji (np. Vulcan) są wyszarzone z podaniem powodu.
+7. **Zapis** – utworzenie lub aktualizacja dashboardu (adres `/aurora-…`) z widokami **Dom** i **Wygaszacz**. Można go potem w każdej chwili otworzyć ponownie w konfiguratorze i poprawić.
 
 ## Motywy
 Standardowy (18 zestawów kolorystycznych), Auto (świąteczny od 1 grudnia do 6 stycznia), Świąteczny, Matrix (deszcz znaków), Jarvis (HUD w stylu Iron Mana), Vice City (neonowy zachód słońca), Wiosna (płatki), Lato (słońce i świetliki), Jesień (liście), Zima (śnieg), Kosmos (gwiazdy), Zorza polarna i Głębia (bąbelki). Motyw wybrany w Managerze jest wartością domyślną – każdy użytkownik może zmienić swój w Ustawieniach dashboardu. Wygaszacz dopasowuje zegar i kafelki do motywu; efekty pogody są wspólne.
 
 ## Karty i kopie zapasowe
-- Dodatek zawiera karty `pastel-home-card.js` (baza Aurory, wersja neutralna – bez danych domu) i `aurora-pulse-card.js`. Przy zapisie Manager instaluje je jako zasoby Lovelace (`/local/aurora_manager/…`) lub aktualizuje. Jeśli te karty są już zainstalowane inną drogą (np. `/local/jarvis/…`), zostają bez zmian.
+- Dodatek zawiera samodzielną kartę `aurora-pulse-card.js` (bez danych domu). Przy zapisie Manager instaluje ją jako zasób Lovelace (`/local/aurora_manager/…`) lub aktualizuje. Jeśli karta jest już zainstalowana inną drogą (np. `/local/jarvis/…`), zostaje bez zmian.
 - **Kopie zapasowe** (przycisk w nagłówku): dashboardy Lovelace, zasoby kart i motywy zapisują się w `/config/aurora_backups` (automatycznie codziennie ok. 3:30; liczba kopii w opcji `manager_backup_keep`), z przywracaniem i wgrywaniem z pliku.
 - Dashboardy utworzone starszym kreatorem (2.x) są widoczne na liście i można je otworzyć w konfiguratorze.
 
 ## Instalacja
 1. Home Assistant → Ustawienia → Dodatki → Sklep → ⋮ → **Repozytoria** → `https://github.com/jaque66/dashboard-aurora-manager`
 2. Zainstaluj **Aurora Manager**, uruchom i włącz „Pokaż w pasku bocznym”.
-3. W panelu kliknij **+ Nowy dashboard** i przejdź przez 6 kroków.
+3. W panelu kliknij **+ Nowy dashboard** i przejdź przez 7 kroków.
 
 ## Wymagania i ograniczenia
 - Home Assistant OS/Supervised (dodatek korzysta z API Supervisora).
@@ -43,26 +44,27 @@ Standardowy (18 zestawów kolorystycznych), Auto (świąteczny od 1 grudnia do 6
 
 **Aurora Pulse** is a modern dashboard for phones and tablets: a living sky that follows weather and time of day, the “Home pulse” ring (alarms and warnings), room tiles, lights, school data (Vulcan), a calendar with adding and deleting events (including recurring ones), weather, climate, air quality, media, radio, TV guide, kids’ tasks with device locking, Formula 1, a voice-assistant orb and a screensaver.
 
-## Configurator features (6 steps)
+## Configurator features (7 steps)
 1. **Start** – dashboard name, Home Assistant areas (rooms), **theme** and (for the Standard theme) colour scheme.
 2. **Rooms** – per room: name, icon, tile colour, sensors (temperature, humidity, presence/motion, illuminance) and **devices** (lights, sockets, media players, fans, covers) with custom labels. Rooms can be reordered, removed and added from more areas.
 3. **Home** – shared entities: weather and outdoor sensors, PM2.5 and air purifier, front door, gas/smoke, flood, alarm (optional), event calendars, **lights** for the home screen and “Turn off lights”, Radio players, batteries, Formula 1.
-4. **Home screen** – which blocks are visible (clock, weather, home pulse, “Now”, school, rooms, lights) and in what order, with a phone preview. On tablets the grid is arranged automatically.
-5. **Dock & menu** – up to 3 shortcuts in the phone dock (next to the fixed “Home” and “More”), a separate shortcut list for the tablet sidebar, and the **content and order of the “More” menu**. Views whose integration is missing (e.g. Vulcan, F1, Radio PL, TV Guide) are greyed out with the reason.
-6. **Save** – creates or updates the dashboard (URL `/aurora-…`) with the **Home** and **Screensaver** views. You can reopen it in the configurator at any time and adjust it.
+4. **Optional modules** – the basic dashboard works without extra integrations. **Radio**, **TV guide**, **Tasks**, **Formula 1** and **Aurora Guard** are enabled only if you have what they need (each has a note in the wizard with its requirements and whether the Manager detected it): Radio – the Radio PL integration and radio-pl-card; TV guide – the TV Guide integration, the tv-guide card and `www/jarvis/tv-guide-config.json`; Tasks – `todo.zadania_<child>` lists (Local To-do); Formula 1 – the F1 Sensor integration; **Aurora Guard – the Android app Aurora Guard on the child's phone** (github.com/jaque66/aurora-guard) plus the helpers, templates and todo lists from that repository's `homeassistant/` directory.
+5. **Home screen** – which blocks are visible (clock, weather, home pulse, “Now”, school, rooms, lights) and in what order, with a phone preview. On tablets the grid is arranged automatically.
+6. **Dock & menu** – up to 3 shortcuts in the phone dock (next to the fixed “Home” and “More”), a separate shortcut list for the tablet sidebar, and the **content and order of the “More” menu**. Views whose integration is missing (e.g. Vulcan, F1, Radio PL, TV Guide) are greyed out with the reason.
+7. **Save** – creates or updates the dashboard (URL `/aurora-…`) with the **Home** and **Screensaver** views. You can reopen it in the configurator at any time and adjust it.
 
 ## Themes
 Standard (18 colour schemes), Auto (Christmas from 1 Dec to 6 Jan), Christmas, Matrix (digital rain), Jarvis (Iron-Man-style HUD), Vice City (neon sunset), Spring (petals), Summer (sun and fireflies), Autumn (leaves), Winter (snow), Space (stars), Northern lights and Deep sea (bubbles). The theme chosen in the Manager is the default – every user can change theirs in the dashboard Settings. The screensaver adapts its clock and tiles to the theme; weather effects are shared.
 
 ## Cards & backups
-- The add-on bundles `pastel-home-card.js` (Aurora base card, neutral build – no home data) and `aurora-pulse-card.js`. On save the Manager installs them as Lovelace resources (`/local/aurora_manager/…`) or updates them. If the cards are already installed another way (e.g. `/local/jarvis/…`), they are left untouched.
+- The add-on bundles the self-contained `aurora-pulse-card.js` card (no home data). On save the Manager installs it as a Lovelace resource (`/local/aurora_manager/…`) or updates them. If the card is already installed another way (e.g. `/local/jarvis/…`), it is left untouched.
 - **Backups** (header link): Lovelace dashboards, card resources and themes are stored in `/config/aurora_backups` (automatically daily at about 03:30; number of copies set by the `manager_backup_keep` option), with restore and upload-from-file.
 - Dashboards created by the older wizard (2.x) show up in the list and can be opened in the configurator.
 
 ## Installation
 1. Home Assistant → Settings → Add-ons → Store → ⋮ → **Repositories** → `https://github.com/jaque66/dashboard-aurora-manager`
 2. Install **Aurora Manager**, start it and enable “Show in sidebar”.
-3. In the panel click **+ New dashboard** and go through the 6 steps.
+3. In the panel click **+ New dashboard** and go through the 7 steps.
 
 ## Requirements & limitations
 - Home Assistant OS / Supervised (the add-on uses the Supervisor API).

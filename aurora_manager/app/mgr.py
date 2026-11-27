@@ -10,7 +10,7 @@ OLD_DIR = os.path.join(DATA, 'newdash')          # rekordy kreatora z wersji 2.x
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, 'assets')
 CONF = os.environ.get('HUD_CONFIG_DIR', '/config')
-CARDS = ('pastel-home-card.js', 'aurora-pulse-card.js')
+CARDS = ('aurora-pulse-card.js',)
 
 CHECKS = ['bat', 'offline', 'climate', 'door', 'air', 'wash', 'utility', 'weather']
 THEMES = ['auto', 'off', 'xmas', 'matrix', 'jarvis', 'vice', 'spring', 'summer', 'autumn', 'winter', 'space', 'aurora', 'deep', 'holo']
@@ -21,6 +21,25 @@ VIEWS = [('kalendarz', 'Kalendarz', 'mdi:calendar-month-outline'), ('pogoda', 'P
          ('baterie', 'Baterie', 'mdi:battery-heart-variant'), ('multimedia', 'Multimedia', 'mdi:play-box-outline'), ('szkola', 'Szkoła', 'mdi:school-outline'), ('radio', 'Radio', 'mdi:radio'),
          ('tv', 'Program TV', 'mdi:television-guide'), ('zadania', 'Zadania', 'mdi:format-list-checks'), ('f1', 'Formuła 1', 'mdi:flag-checkered'), ('asystent', 'Asystent', 'mdi:creation'),
          ('ustawienia', 'Ustawienia', 'mdi:cog-outline')]
+# moduly opcjonalne: wybierane przy tworzeniu dashboardu; wymagaja dodatkowych integracji lub aplikacji (notatka "need" pokazywana w kreatorze)
+MODULES = [
+    {'id': 'radio', 'name': 'Radio', 'icon': 'mdi:radio', 'views': ['radio'],
+     'desc': 'Widok radia internetowego (RMF ON, Eurozet i inne): stacje, ostatnio grane, wybór odtwarzacza.',
+     'need': 'Wymaga integracji „Radio PL” (własny komponent, np. z HACS) oraz karty radio-pl-card. Odtwarzacze wybierasz poniżej.'},
+    {'id': 'tv', 'name': 'Program TV', 'icon': 'mdi:television-guide', 'views': ['tv'],
+     'desc': 'Program telewizyjny z przełączaniem kanałów na dekoderze lub telewizorze.',
+     'need': 'Wymaga integracji „TV Guide” (HACS) i karty tv-guide oraz pliku www/jarvis/tv-guide-config.json z listą kanałów i encją dekodera.'},
+    {'id': 'zadania', 'name': 'Zadania', 'icon': 'mdi:format-list-checks', 'views': ['zadania'],
+     'desc': 'Listy zadań dzieci z zatwierdzaniem przez rodzica.',
+     'need': 'Wymaga list zadań (integracja Local To-do) o nazwach todo.zadania_<dziecko>. Bez nich widok będzie pusty.'},
+    {'id': 'f1', 'name': 'Formuła 1', 'icon': 'mdi:flag-checkered', 'views': ['f1'],
+     'desc': 'Następny wyścig, klasyfikacje, wyniki i transmisja na żywo.',
+     'need': 'Wymaga integracji „F1 Sensor” (HACS) – encje sensor.f1_*.'},
+    {'id': 'guard', 'name': 'Aurora Guard', 'icon': 'mdi:shield-lock-outline', 'views': ['guard'],
+     'desc': 'Blokowanie aplikacji i całego telefonu dziecka z poziomu dashboardu, limity czasu, lokalizacja, tryb nocny.',
+     'need': 'Wymaga aplikacji Android „Aurora Guard” na telefonie dziecka (github.com/jaque66/aurora-guard, plik APK z wydania) oraz konfiguracji w Home Assistant: helpery, szablony webhooka i listy todo z szablonu z repozytorium (katalog homeassistant/). Bez tego karta Guard pokaże puste dane.'},
+]
+MOD_VIEWS = {v: m['id'] for m in MODULES for v in m['views']}
 DOCK_EXTRA = [('lights', 'Światła', 'mdi:lightbulb-group-outline'), ('rooms', 'Pokoje', 'mdi:sofa-outline'), ('events', 'Wydarzenia', 'mdi:calendar-clock-outline')]
 DEF_NAV = {'dock': ['lights', 'events'], 'tdock': ['rooms', 'klimat', 'multimedia', 'events', 'pogoda', 'powietrze'], 'menu': []}
 
@@ -123,7 +142,9 @@ def catalog():
          'baterie': ok(G['battery'], 'brak czujników baterii'), 'multimedia': ok(G['media'], 'brak odtwarzaczy'), 'szkola': ok(has('calendar.szkola_') or has('sensor.szkola_'), 'brak integracji Vulcan (kalendarze szkola_*)'),
          'radio': ok('sensor.radio_pl_now_playing' in st or 'radio_pl' in dom, 'brak integracji Radio PL'), 'tv': ok('tv_guide' in dom and tvcfg, 'brak integracji TV Guide' if 'tv_guide' not in dom else 'brak pliku www/jarvis/tv-guide-config.json (lista kanałów)'),
          'zadania': ok(G['todo'], 'brak list zadań (todo)'), 'f1': ok('sensor.f1_next_race' in st or 'f1_sensor' in dom, 'brak integracji F1'), 'asystent': ok(True), 'ustawienia': ok(True)}
-    return {'areas': areas, 'g': G, 'views': V, 'cards': cards_state()}
+    M = {'radio': V['radio'], 'tv': V['tv'], 'zadania': V['zadania'], 'f1': V['f1'],
+         'guard': ok('sensor.aurora_guard_' in ' '.join(st) or any(i.startswith('input_boolean.blokada_telefon_') for i in st), 'nie wykryto helperów ani czujników Aurora Guard')}
+    return {'areas': areas, 'g': G, 'views': V, 'modules': M, 'cards': cards_state()}
 
 
 def _slugn(s):
@@ -148,7 +169,7 @@ def propose(area_ids):
     cfg['checks'] = {k: True for k in CHECKS}; cfg['ignore'] = []
     cfg.update({'door': (g['door'] or [{'id': ''}])[0]['id'], 'gas': (g['gas'] or [{'id': ''}])[0]['id'], 'floodK': (g['flood'] or [{'id': ''}])[0]['id'], 'floodL': (g['flood'][1:2] or [{'id': ''}])[0]['id'],
                 'alarm': '', 'alarmSw': '', 'radioPlayers': [], 'media': {'active': '', 'radio': '', 'tvs': []}, 'todo': {'editors': [], 'viewers': []},
-                'f1': {'on': cat['views']['f1']['ok']}, 'cal': [x['id'] for x in g['calendar'] if not x['id'].startswith('calendar.szkola_')][:6]})
+                'f1': {'on': False}, 'cal': [x['id'] for x in g['calendar'] if not x['id'].startswith('calendar.szkola_')][:6]})
     cfg['lightsOff'] = [d[0] for r in cfg['rooms'] for d in r['dev'] if d[0].split('.')[0] in ('light', 'switch')]
     seen, tvs = set(), []
     for e in g['media']:
@@ -158,8 +179,9 @@ def propose(area_ids):
     nav = json.loads(json.dumps(DEF_NAV))
     ok = cat['views']
     nav['tdock'] = [v for v in nav['tdock'] if v in ('rooms', 'events') or ok.get(v, {}).get('ok')]
-    nav['menu'] = [v[0] for v in VIEWS if ok[v[0]]['ok'] and v[0] not in ('ustawienia', 'asystent')]
-    return {'cfg': cfg, 'nav': nav, 'blocks': {'order': [b[0] for b in BLOCKS], 'hide': [] if ok['szkola']['ok'] else ['school']}, 'views': ok}
+    nav['menu'] = [v[0] for v in VIEWS if ok[v[0]]['ok'] and v[0] not in ('ustawienia', 'asystent') and v[0] not in MOD_VIEWS]
+    cfg['f1'] = {'on': False}; cfg['guard'] = []
+    return {'cfg': cfg, 'nav': nav, 'modules': [], 'modcfg': {'radioPlayers': [], 'guard': []}, 'blocks': {'order': [b[0] for b in BLOCKS], 'hide': [] if ok['szkola']['ok'] else ['school']}, 'views': ok}
 
 
 def _derive(cfg):
@@ -198,8 +220,29 @@ def layout(blocks, w=1280, h=800):
     return {'v': 1, 'res': [w, h], 'tablet': {'cols': cols, 'rows': R, 'blocks': tb, 'hide': hide}, 'phone': {'order': order, 'hide': hide}}
 
 
+def apply_modules(d):
+    """Zwraca (cfg, nav) po uwzglednieniu modulow: wylaczone moduly znikaja z menu/docku i z konfiguracji."""
+    mods = d.get('modules')
+    cfg = json.loads(json.dumps(d['cfg'])); nav = json.loads(json.dumps(d.get('nav') or {}))
+    if mods is None:   # rekord sprzed modulow: zachowaj dotychczasowe zachowanie
+        return cfg, nav
+    on = set(mods)
+    for k in ('dock', 'tdock', 'menu'):
+        nav[k] = [v for v in nav.get(k, []) if MOD_VIEWS.get(v, 'x') in on or v not in MOD_VIEWS]
+    if 'f1' not in on: cfg['f1'] = {'on': False}
+    else: cfg['f1'] = {'on': True}
+    if 'guard' not in on: cfg['guard'] = []
+    else: cfg['guard'] = [g for g in (cfg.get('guard') or []) if g.get('id') and g.get('name')]
+    if 'radio' not in on: cfg['radioPlayers'] = []
+    for m in on:
+        for v in next((x['views'] for x in MODULES if x['id'] == m), []):
+            if v != 'guard' and v not in nav.get('menu', []) and v not in nav.get('dock', []) and v not in nav.get('tdock', []): nav.setdefault('menu', []).append(v)
+    return cfg, nav
+
+
 def dashboard_config(d):
-    cfg = _derive(d['cfg'])
+    cfg0, nav0 = apply_modules(d); d = dict(d, nav=nav0)
+    cfg = _derive(cfg0)
     lay = layout(d.get('blocks') or {}, d.get('w'), d.get('h'))
     nav = d.get('nav') or {}
     th, sc = d.get('theme') or 'auto', d.get('scheme') or ''
@@ -362,7 +405,7 @@ def save(body):
         path = 'aurora-' + path
     msgs = ensure_cards()
     rec = {'id': rid, 'name': name, 'path': path, 'theme': th, 'scheme': body.get('scheme') or '', 'w': body.get('w') or 1280, 'h': body.get('h') or 800, 'cfg': cfg,
-           'blocks': body.get('blocks') or {}, 'nav': body.get('nav') or {}, 'created': (old or {}).get('created') or time.strftime('%Y-%m-%d %H:%M')}
+           'blocks': body.get('blocks') or {}, 'nav': body.get('nav') or {}, 'modules': body.get('modules') if isinstance(body.get('modules'), list) else [], 'created': (old or {}).get('created') or time.strftime('%Y-%m-%d %H:%M')}
     asyncio.run(_ha_save(path, name, dashboard_config(rec), create=old is None))
     os.makedirs(DIR, exist_ok=True)
     json.dump(rec, open(_file(rid), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)

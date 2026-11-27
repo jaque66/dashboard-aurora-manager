@@ -9,7 +9,7 @@ import manager
 import mgr
 
 STATIC = os.path.join(HERE, 'static')
-UI_VERSION = '3.0.12'
+UI_VERSION = '3.1.0'
 TYPES = {'.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png'}
 
 
@@ -38,7 +38,7 @@ class H(BaseHTTPRequestHandler):
         try:
             if p == '/api/info':
                 return self._send(200, {'version': UI_VERSION, 'themes': mgr.THEMES, 'blocks': [{'id': b[0], 'name': b[1], 'icon': b[2]} for b in mgr.BLOCKS],
-                                        'views': [{'id': v[0], 'name': v[1], 'icon': v[2]} for v in mgr.VIEWS], 'dockExtra': [{'id': v[0], 'name': v[1], 'icon': v[2]} for v in mgr.DOCK_EXTRA]})
+                                        'views': [{'id': v[0], 'name': v[1], 'icon': v[2]} for v in mgr.VIEWS], 'dockExtra': [{'id': v[0], 'name': v[1], 'icon': v[2]} for v in mgr.DOCK_EXTRA], 'modules': mgr.MODULES})
             if p == '/api/catalog':
                 return self._send(200, mgr.catalog())
             if p == '/api/dashboards':

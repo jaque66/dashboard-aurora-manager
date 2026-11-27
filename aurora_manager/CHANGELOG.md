@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0 – 2026-11-27
+
+**PL**
+- **Moduły opcjonalne** (nowy krok kreatora): Radio, Program TV, Zadania, Formuła 1 i Aurora Guard włączasz przy tworzeniu dashboardu. Przy każdym jest notatka z wymaganiami (integracje, karty, a dla Guard – aplikacja Android na telefonie dziecka i konfiguracja w HA) oraz informacja, czy Manager to wykrył. Dashboard podstawowy działa bez nich.
+- Dodatek zawiera jedną, samodzielną kartę `aurora-pulse-card.js`; karta bazowa Aurory (`pastel-home-card.js`) nie jest już potrzebna.
+
+**EN**
+- **Optional modules** (new wizard step): Radio, TV guide, Tasks, Formula 1 and Aurora Guard are chosen when creating a dashboard. Each has a note with its requirements (integrations, cards and, for Guard, the Android app on the child’s phone plus Home Assistant setup) and whether the Manager detected them. The basic dashboard works without them.
+- The add-on ships a single self-contained `aurora-pulse-card.js`; the Aurora base card (`pastel-home-card.js`) is no longer needed.
+
 ## 3.0.12 – 2026-11-27
 
 **PL**
