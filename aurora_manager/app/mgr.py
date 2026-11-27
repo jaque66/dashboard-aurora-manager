@@ -25,10 +25,10 @@ VIEWS = [('kalendarz', 'Kalendarz', 'mdi:calendar-month-outline'), ('pogoda', 'P
 MODULES = [
     {'id': 'radio', 'name': 'Radio', 'icon': 'mdi:radio', 'views': ['radio'],
      'desc': 'Widok radia internetowego (RMF ON, Eurozet i inne): stacje, ostatnio grane, wybór odtwarzacza.',
-     'need': 'Wymaga integracji „Radio PL” (własny komponent, np. z HACS) oraz karty radio-pl-card. Odtwarzacze wybierasz poniżej.'},
+     'need': 'Wymaga integracji „Radio RMF ON i ZET” (HACS: github.com/jaque66/ha-radio-pl) – karta radio-pl-card jest w niej wbudowana i ładuje się sama. Odtwarzacze wybierasz poniżej.'},
     {'id': 'tv', 'name': 'Program TV', 'icon': 'mdi:television-guide', 'views': ['tv'],
      'desc': 'Program telewizyjny z przełączaniem kanałów na dekoderze lub telewizorze.',
-     'need': 'Wymaga integracji „TV Guide” (HACS) i karty tv-guide oraz pliku www/jarvis/tv-guide-config.json z listą kanałów i encją dekodera.'},
+     'need': 'Wymaga integracji „TV guide” (HACS: github.com/dariuszpaluch/ha-tv-guide) – karta tv-guide jest w niej wbudowana. Dodatkowo plik www/jarvis/tv-guide-config.json z listą kanałów (i encją dekodera, jeśli kanały mają się przełączać).'},
     {'id': 'zadania', 'name': 'Zadania', 'icon': 'mdi:format-list-checks', 'views': ['zadania'],
      'desc': 'Listy zadań dzieci z zatwierdzaniem przez rodzica.',
      'need': 'Wymaga list zadań (integracja Local To-do) o nazwach todo.zadania_<dziecko>. Bez nich widok będzie pusty.'},

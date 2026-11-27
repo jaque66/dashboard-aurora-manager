@@ -4,6 +4,7 @@
 
 **PL**
 - **Moduły opcjonalne** (nowy krok kreatora): Radio, Program TV, Zadania, Formuła 1 i Aurora Guard włączasz przy tworzeniu dashboardu. Przy każdym jest notatka z wymaganiami (integracje, karty, a dla Guard – aplikacja Android na telefonie dziecka i konfiguracja w HA) oraz informacja, czy Manager to wykrył. Dashboard podstawowy działa bez nich.
+- Notatki modułów Radio i Program TV wskazują integracje z wbudowanymi kartami (ha-radio-pl, ha-tv-guide) – osobna karta nie jest potrzebna.
 - Dodatek zawiera jedną, samodzielną kartę `aurora-pulse-card.js`; karta bazowa Aurory (`pastel-home-card.js`) nie jest już potrzebna.
 
 **EN**
