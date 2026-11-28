@@ -2621,9 +2621,24 @@ class AuroraPulseCard extends AuroraBase {
     const txt = !st ? 'brak danych' : sl ? 'śpi do ' + String(swk.getHours()).padStart(2, '0') + ':' + String(swk.getMinutes()).padStart(2, '0') : st.state !== 'ok' ? 'usługa wyłączona' : on ? 'online' : 'offline' + (off ? ' od ' + off : '');
     return `<span style="color:${sl ? '#8fa3ff' : on ? '#3fe0a5' : '#ff8a9a'}">●</span> ${esc(g.name)} · ${txt}${at.version ? ' · v' + esc(at.version) : ''}${on && at.battery != null ? ' · ' + esc(at.battery) + '%' : ''}`;
   }
+  /* kazde dziecko w sekcji Guard jako osobne okno rozwijalne (klucz sekcja:id w this._gdOpen); blok dziecka = <div padding:8px 0 border-top> z naglowkiem (pierwszy div flex) */
+  _pKidWrap(cat, body) {
+    const M = '<div style="padding:8px 0;border-top:1px solid rgba(255,255,255,.08)">', H = '<div style="display:flex;align-items:center;gap:8px">'; let out = '', pos = 0;
+    for (;;) {
+      const i = body.indexOf(M, pos); if (i < 0) { out += body.slice(pos); break; } out += body.slice(pos, i);
+      let depth = 1, end = -1, m; const re = /<div\b|<\/div>/g; re.lastIndex = i + M.length;
+      while ((m = re.exec(body))) { if (m[0] === '</div>') { if (--depth === 0) { end = m.index; break; } } else depth++; }
+      if (end < 0) { out += body.slice(i); break; }
+      const inner = body.slice(i + M.length, end), he = inner.indexOf('</div>'), head = inner.slice(0, he), rest = inner.slice(he + 6);
+      const id = (/data-g(?:i)?="([^"]+)"/.exec(inner) || [])[1] || String(i), key = cat + ':' + id, open = (this._gdOpen = this._gdOpen || new Set()).has(key);
+      out += M + (head.indexOf(H) === 0 ? `<div class="gkh" role="button" data-a="gdacc" data-k="${esc(key)}" style="display:flex;align-items:center;gap:8px;cursor:pointer">` + head.slice(H.length) : head) + `<ha-icon icon="${open ? 'mdi:chevron-up' : 'mdi:chevron-down'}" style="margin-left:auto;opacity:.7"></ha-icon></div>` + (open ? `<div class="gkb">${rest}</div>` : '') + '</div>';
+      pos = end + 6;
+    }
+    return out;
+  }
   _pGdAcc(k, t, sub, body, html) {   /* zwijany kafelek sekcji (domyslnie zwiniety) */
     const o = (this._gdOpen = this._gdOpen || new Set()).has(k);
-    return `<div class="vc gl gacc"><button type="button" class="gah" data-a="gdacc" data-k="${k}"><span><h4 style="margin:0">${esc(t)}</h4><small>${html ? sub : esc(sub)}</small></span><ha-icon icon="${o ? 'mdi:chevron-up' : 'mdi:chevron-down'}"></ha-icon></button>${o ? `<div class="gab">${body}</div>` : ''}</div>`;
+    return `<div class="vc gl gacc"><button type="button" class="gah" data-a="gdacc" data-k="${k}"><span><h4 style="margin:0">${esc(t)}</h4><small>${html ? sub : esc(sub)}</small></span><ha-icon icon="${o ? 'mdi:chevron-up' : 'mdi:chevron-down'}"></ha-icon></button>${o ? `<div class="gab">${['tel', 'loc', 'time', 'sched'].indexOf(k) >= 0 ? this._pKidWrap(k, body) : body}</div>` : ''}</div>`;
   }
   _vw_guard() {
     const GDS = PC.guard || [], gdh = GDS.length ? this._pGdAcc('tel', 'Telefony dzieci · Aurora Guard', GDS.map((g) => this._pGdStat(g)).join('<br>'), `${GDS.map((g) => { const S = this._hass.states, lk = S['input_boolean.blokada_telefon_' + g.id], au = S['input_boolean.auto_blokada_telefonu_' + g.id], st = S['sensor.aurora_guard_' + g.id + '_status'], on = !!lk && lk.state === 'on', auto = !!au && au.state === 'on', full = (S['input_boolean.blokada_telefon_' + g.id + '_caly'] || {}).state === 'on';
