@@ -1212,6 +1212,7 @@ ha-icon { --mdc-icon-size: 22px; }
 #gdmfs { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; background: #0b1020; }
 #gdmfs .gmh { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 10px; flex: none; flex-wrap: wrap; }
 #gdmfs .gmh > b { font-size: 18px; font-weight: 600; margin-right: auto; }
+#gdmfs .gmt { width: 40px; height: 40px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none; color: inherit; background: rgba(255,255,255,.1); } #gdmfs .gmt[hidden] { display: none; }
 #gdmfs .gmc { display: flex; gap: 6px; flex-wrap: wrap; } #gdmfs .gmc button { width: auto !important; height: auto !important; min-width: 0 !important; aspect-ratio: auto !important; flex: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; padding: 8px 15px; border-radius: 99px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: inherit; font: inherit; font-size: 13px; } #gdmfs .gmc button.on { background: rgba(120,200,255,.25); border-color: rgba(120,200,255,.6); }
 @media (max-width: 760px) { #gdmfs .gmh > b { margin-right: 0; } #gdmfs .gmc { order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; } #gdmfs .gmh { padding-right: 14px; } }
 #gdmfs .gmb { flex: 1; min-height: 0; position: relative; } #gdmfs .gmb > * { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border: 0; }
@@ -2543,16 +2544,17 @@ class AuroraPulseCard extends AuroraBase {
     if (!pos.length) { this._pToast('Brak danych o lokalizacji telefonów'); return; }
     this._gdMapSel = id || ''; const sel = id ? pos.filter((x) => x.g.id === id) : pos; if (!sel.length) return;
     const box = document.createElement('div'); box.id = 'gdmfs';
-    box.innerHTML = `<div class="gmh"><button class="bk gl" data-a="gdmapx" aria-label="Zamknij mapę"><ha-icon icon="mdi:arrow-left"></ha-icon></button><b>Mapa telefonów</b><div class="gmc">${pos.length > 1 ? `<button class="${id ? '' : 'on'}" data-a="gdmapf" data-g="">Wszyscy</button>` : ''}${pos.map((x) => `<button class="${id === x.g.id ? 'on' : ''}" data-a="gdmapf" data-g="${esc(x.g.id)}">${esc(x.g.name)}</button>`).join('')}</div></div><div class="gmb"></div>`;
+    box.innerHTML = `<div class="gmh"><button class="bk gl" data-a="gdmapx" aria-label="Zamknij mapę"><ha-icon icon="mdi:arrow-left"></ha-icon></button><b>Mapa telefonów</b><button class="gl gmt" data-a="gdmapth" aria-label="Jasna / ciemna mapa" hidden><ha-icon icon="mdi:theme-light-dark"></ha-icon></button><div class="gmc">${pos.length > 1 ? `<button class="${id ? '' : 'on'}" data-a="gdmapf" data-g="">Wszyscy</button>` : ''}${pos.map((x) => `<button class="${id === x.g.id ? 'on' : ''}" data-a="gdmapf" data-g="${esc(x.g.id)}">${esc(x.g.name)}</button>`).join('')}</div></div><div class="gmb"></div>`;
     root.appendChild(box); const mb = box.querySelector('.gmb');
     const osm = () => { const la = sel.map((x) => x.t.attributes.latitude), lo = sel.map((x) => x.t.attributes.longitude), pad = 0.004, a = Math.min.apply(null, la), b = Math.max.apply(null, la), c = Math.min.apply(null, lo), d = Math.max.apply(null, lo);
       mb.innerHTML = `<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${c - pad * 1.6},${a - pad},${d + pad * 1.6},${b + pad}&layer=mapnik${sel.length === 1 ? `&marker=${la[0]},${lo[0]}` : ''}"></iframe>`; };
-    const hm = () => { const el = document.createElement('ha-map'); el.hass = this._hass; el.entities = sel.map((x) => ({entity_id: 'device_tracker.guard_' + x.g.id, name: x.g.name})); el.zoom = 16; el.autoFit = true; el.themeMode = 'dark'; this._gdMapEl = el; mb.appendChild(el); };
+    const hm = () => { const el = document.createElement('ha-map'); el.hass = this._hass; el.entities = sel.map((x) => ({entity_id: 'device_tracker.guard_' + x.g.id, name: x.g.name})); el.zoom = 16; el.autoFit = true; el.themeMode = this._pGdMapTh(); this._gdMapEl = el; mb.appendChild(el); const tb = box.querySelector('.gmt'); if (tb) tb.hidden = false; };
     if (customElements.get('ha-map')) hm();
     else if (window.loadCardHelpers) window.loadCardHelpers().then((H) => H.createCardElement({type: 'map', entities: ['device_tracker.guard_' + sel[0].g.id]})).then(() => customElements.whenDefined('ha-map')).then(() => hm()).catch(osm);
     else osm();
     setTimeout(() => { if (!this._gdMapEl && !mb.firstChild) osm(); }, 4000);
   }
+  _pGdMapTh() { let t = ''; try { t = localStorage.getItem('pulse_gdmap') || ''; } catch (e) { /* ignore */ } return t === 'dark' ? 'dark' : 'light'; }
   _pGdSet(g) {   /* ustawienia aplikacji na telefonie, sterowane z HA (helpery guard_*) */
     const S = this._hass.states, lo = S['input_boolean.guard_lokalizacja_' + g.id], ea = 'input_number.guard_lok_poza_' + g.id, eh = 'input_number.guard_lok_dom_' + g.id; if (!lo) return '';
     const ch = (e, vals, unit) => { const cur = S[e] ? Math.round(parseFloat(S[e].state)) : null; return vals.map((v) => `<button type="button" class="${cur === v ? 'on' : ''}" data-a="gdset" data-e="${e}" data-v="${v}">${v < 60 ? v + ' min' : v / 60 + ' godz.'}</button>`).join(''); };
@@ -2725,6 +2727,7 @@ class AuroraPulseCard extends AuroraBase {
     if (a === 'gdset') { const e = b.dataset.e, v = b.dataset.v; if (v === 'tg') this._call('input_boolean', 'toggle', {entity_id: e}); else this._call('input_number', 'set_value', {entity_id: e, value: parseFloat(v)}); this._pToast('Zapisano – telefon zastosuje zmianę'); return; }
     if (a === 'gdloc') { this._call('input_button', 'press', {entity_id: 'input_button.lokalizacja_telefon_' + b.dataset.g}); this._pToast('Poproszono telefon o pozycję…'); return; }
     if (a === 'gdmapf') { this._pGdMapFs(b.dataset.g || ''); return; }
+    if (a === 'gdmapth') { const t = this._pGdMapTh() === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('pulse_gdmap', t); } catch (e) { /* ignore */ } if (this._gdMapEl) this._gdMapEl.themeMode = t; this._pToast(t === 'dark' ? 'Ciemna mapa' : 'Jasna mapa'); return; }
     if (a === 'gdmapx') { const m = this.shadowRoot.getElementById('gdmfs'); if (m) m.remove(); this._gdMapEl = null; return; }
     if (a === 'gdmap') { this._gdMap = this._gdMap === b.dataset.g ? null : b.dataset.g; this._pVRender(true); return; }
     if (a === 'gdfull') { if (!this._pGdEdit()) { this._pToast('Blokadę zmieniają tylko wybrane konta'); return; } this._call('input_boolean', 'toggle', {entity_id: 'input_boolean.blokada_telefon_' + b.dataset.g + '_caly'}); return; }

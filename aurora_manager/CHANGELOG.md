@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0 – 2026-11-28
+
+**PL**
+- Mapa pełnoekranowa w widoku Guard: **przełącznik jasna / ciemna mapa** (ikona w nagłówku). Domyślnie jasna, wybór jest zapamiętywany na urządzeniu.
+
+**EN**
+- Full-screen map in the Guard view: a **light / dark map switch** (icon in the header). Light by default; the choice is remembered on the device.
+
 ## 3.2.1 – 2026-11-28
 
 **PL**
