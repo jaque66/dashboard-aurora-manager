@@ -5,10 +5,12 @@
 **PL**
 - Mapa pełnoekranowa w widoku Guard: **przełącznik jasna / ciemna mapa** (ikona w nagłówku). Domyślnie jasna, wybór jest zapamiętywany na urządzeniu.
 - Mapa: czytelne znaczniki (inicjał dziecka zamiast ucinanego imienia, kolorowe kropki przy przyciskach wyboru) i większa strzałka powrotu; w nagłówku **dokładność lokalizacji** (±N m, a powyżej 100 m ostrzeżenie „pozycja przybliżona”).
+- Menu „Więcej”: **krótsze animacje** – kafelki pojawiają się ok. dwa razy szybciej.
 
 **EN**
 - Full-screen map in the Guard view: a **light / dark map switch** (icon in the header). Light by default; the choice is remembered on the device.
 - Map: readable markers (the child's initial instead of a clipped name, colour dots on the selector buttons) and a larger back arrow; the header shows the **location accuracy** (±N m, with a “position approximate” warning above 100 m).
+- “More” menu: **shorter animations** – the tiles appear about twice as fast.
 
 ## 3.2.1 – 2026-11-28
 
