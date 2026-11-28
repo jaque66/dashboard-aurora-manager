@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.1 – 2026-11-28
+
+**PL**
+- Mapa pełnoekranowa w widoku Guard: poprawiony układ na telefonie – widać wszystkie przyciski wyboru dziecka (nazwy klas kolidowały ze stylami kalendarza).
+
+**EN**
+- Full-screen map in the Guard view: fixed the phone layout – all child selector buttons are visible (class names clashed with the calendar styles).
+
 ## 3.2.0 – 2026-11-28
 
 **PL**
