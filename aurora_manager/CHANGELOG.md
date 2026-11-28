@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.4.0 – 2026-11-28
+
+**PL**
+- Widok Guard: przełącznik **„Blokada reklam (DNS)”** w ustawieniach aplikacji dziecka – włącza w telefonie Prywatny DNS z filtrem reklam (wymaga Aurora Guard 2.9.0, pola `input_boolean.guard_reklamy_<id>` i jednorazowo uprawnienia nadanego przez adb).
+
+**EN**
+- Guard view: an **“Ad blocking (DNS)”** switch in the child's app settings – turns on Private DNS with an ad filter on the phone (needs Aurora Guard 2.9.0, the `input_boolean.guard_reklamy_<id>` field and a one-time permission granted via adb).
+
 ## 3.3.0 – 2026-11-28
 
 **PL**
