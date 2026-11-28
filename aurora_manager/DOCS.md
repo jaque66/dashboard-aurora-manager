@@ -6,7 +6,7 @@
 
 **Aurora Pulse** to nowoczesny dashboard dla telefonu i tabletu: żywe niebo zależne od pogody i pory dnia, „Puls domu” (pierścień z alarmami i ostrzeżeniami), kafelki pokoi, światła, szkoła (Vulcan), kalendarz z dodawaniem i usuwaniem wydarzeń (także cyklicznych), pogoda, klimat, powietrze, multimedia, radio, program TV, zadania dzieci z blokadą urządzeń, Formuła 1, asystent głosowy oraz wygaszacz ekranu.
 
-## Możliwości konfiguratora (6 kroków)
+## Możliwości konfiguratora (7 kroków)
 1. **Start** – nazwa dashboardu, wybór obszarów Home Assistanta (pomieszczeń), **motyw** i (dla motywu Standardowego) kolorystyka.
 2. **Pokoje** – dla każdego pomieszczenia: nazwa, ikona, kolor kafelka, czujniki (temperatura, wilgotność, obecność/ruch, natężenie światła) oraz **urządzenia** (światła, gniazdka, odtwarzacze, wentylatory, rolety) z własnymi etykietami. Pokoje można przestawiać, usuwać i dodawać z kolejnych obszarów.
 3. **Dom** – encje wspólne: pogoda i czujniki zewnętrzne, PM2.5 i oczyszczacz powietrza, drzwi wejściowe, gaz/dym, zalanie, alarm (opcjonalnie), kalendarze wydarzeń, **światła** na ekranie głównym i „Zgaś światła”, odtwarzacze Radia, baterie.
@@ -17,6 +17,14 @@
 
 ## Motywy
 Standardowy (18 zestawów kolorystycznych), Auto (świąteczny od 1 grudnia do 6 stycznia), Świąteczny, Matrix (deszcz znaków), Jarvis (HUD w stylu Iron Mana), Vice City (neonowy zachód słońca), Wiosna (płatki), Lato (słońce i świetliki), Jesień (liście), Zima (śnieg), Kosmos (gwiazdy), Zorza polarna i Głębia (bąbelki). Motyw wybrany w Managerze jest wartością domyślną – każdy użytkownik może zmienić swój w Ustawieniach dashboardu. Wygaszacz dopasowuje zegar i kafelki do motywu; efekty pogody są wspólne.
+
+## Urządzenia Aurora Guard (kreator)
+Zakładka **Urządzenia Guard** w nagłówku Managera pokazuje telefony i tablety dzieci pod kontrolą Aurora Guard (status, wersja aplikacji, bateria, blokada) i pozwala **dodać kolejne urządzenie jednym kreatorem**:
+1. **Urządzenie** – nazwa i identyfikator (np. „Ola” → `ola`; identyfikator wpiszesz też w aplikacji).
+2. **Powiadomienia i dashboardy** – które telefony rodziców mają dostawać prośby o czas, ostrzeżenia i raport tygodniowy oraz do których dashboardów Aurora Pulse dodać urządzenie; opcjonalnie tryb auto (blokada do wykonania zadań).
+3. **Podsumowanie i utworzenie** – kreator tworzy w Home Assistancie wszystko, czego potrzebuje urządzenie: pomocniki (blokady, limity, harmonogramy, liczniki, komunikaty), listy Local To-do, czujniki z webhooka (status, aplikacje, użycie, reguły, lokalizacja – plik `templates/aurora_guard_<id>.yaml`), automatyzacje (prośby o czas z przyciskami w powiadomieniu, ingerencja, brak kontaktu, harmonogram, strefa Szkoła, dzienny limit) oraz aktualizuje raport tygodniowy i zerowanie bonusu.
+4. **Dane do aplikacji** – adres HA, identyfikator telefonu i **identyfikator webhooka** (z przyciskami „Kopiuj”) oraz lista kroków na urządzeniu (instalacja APK, usługa dostępności, token).
+Urządzenia dodane kreatorem można z tej samej zakładki usunąć (razem z tym, co kreator utworzył). Kreator wymaga Home Assistant z integracją Local To-do i szablonami w katalogu `templates/` (`template: !include_dir_merge_list templates/`). Aplikację Android (APK) pobierzesz z wydań Aurora Guard: https://github.com/jaque66/aurora-guard/releases/latest.
 
 ## Karty i kopie zapasowe
 - Dodatek zawiera samodzielną kartę `aurora-pulse-card.js` (bez danych domu). Przy zapisie Manager instaluje ją jako zasób Lovelace (`/local/aurora_manager/…`) lub aktualizuje. Jeśli karta jest już zainstalowana inną drogą (np. `/local/jarvis/…`), zostaje bez zmian.
@@ -55,6 +63,14 @@ Standardowy (18 zestawów kolorystycznych), Auto (świąteczny od 1 grudnia do 6
 
 ## Themes
 Standard (18 colour schemes), Auto (Christmas from 1 Dec to 6 Jan), Christmas, Matrix (digital rain), Jarvis (Iron-Man-style HUD), Vice City (neon sunset), Spring (petals), Summer (sun and fireflies), Autumn (leaves), Winter (snow), Space (stars), Northern lights and Deep sea (bubbles). The theme chosen in the Manager is the default – every user can change theirs in the dashboard Settings. The screensaver adapts its clock and tiles to the theme; weather effects are shared.
+
+## Aurora Guard devices (wizard)
+The **Guard devices** tab in the Manager header lists the children's phones and tablets under Aurora Guard (status, app version, battery, lock) and lets you **add another device with one wizard**:
+1. **Device** – a name and an identifier (e.g. “Ola” → `ola`; you also enter the identifier in the app).
+2. **Notifications and dashboards** – which parents' phones receive time requests, warnings and the weekly report, and which Aurora Pulse dashboards the device is added to; optionally auto mode (lock until the tasks are done).
+3. **Summary and creation** – the wizard creates everything the device needs in Home Assistant: helpers (locks, limits, schedules, counters, messages), Local To-do lists, webhook sensors (status, apps, usage, rules, location – the file `templates/aurora_guard_<id>.yaml`), automations (time requests with notification buttons, tampering, no contact, schedule, School zone, daily limit) and updates the weekly report and the bonus reset.
+4. **App data** – the HA address, the phone identifier and the **webhook id** (with “Copy” buttons) plus a checklist for the device (install the APK, accessibility service, token).
+Devices added by the wizard can be removed from the same tab (together with everything the wizard created). The wizard needs Home Assistant with the Local To-do integration and templates in the `templates/` directory (`template: !include_dir_merge_list templates/`). The Android APK is in the Aurora Guard releases: https://github.com/jaque66/aurora-guard/releases/latest.
 
 ## Cards & backups
 - The add-on bundles the self-contained `aurora-pulse-card.js` card (no home data). On save the Manager installs it as a Lovelace resource (`/local/aurora_manager/…`) or updates them. If the card is already installed another way (e.g. `/local/jarvis/…`), it is left untouched.

@@ -1,0 +1,593 @@
+{
+ "aurora_guard_prosba___ID__": {
+  "id": "aurora_guard_prosba___ID__",
+  "alias": "Aurora Guard: prośba o czas __NAME__",
+  "description": "Dziecko prosi o więcej czasu / odblokowanie (przycisk na ekranie blokady)",
+  "triggers": [
+   {
+    "trigger": "webhook",
+    "webhook_id": "__HOOK__",
+    "local_only": false,
+    "allowed_methods": [
+     "POST"
+    ]
+   }
+  ],
+  "conditions": [
+   {
+    "condition": "template",
+    "value_template": "{{ trigger.json.type | default('') == 'request' }}"
+   }
+  ],
+  "actions": [
+   {
+    "action": "input_text.set_value",
+    "target": {
+     "entity_id": "input_text.guard_prosba___ID__"
+    },
+    "data": {
+     "value": "{{ (now().timestamp() | int) }}|{{ trigger.json.name | default('') }}|{{ trigger.json.pkg | default('') }}|{{ trigger.json.reason | default('') }}"
+    }
+   },
+   {
+    "action": "counter.increment",
+    "target": {
+     "entity_id": "counter.guard_prosby___ID__"
+    }
+   },
+   {
+    "action": "notify.mobile_app_TELEFON_RODZICA",
+    "data": {
+     "title": "__NAME__ prosi o czas",
+     "message": "{{ trigger.json.name | default(\"Telefon\") }}: {{ \"limit czasu wyczerpany\" if trigger.json.reason == \"limit\" else \"aplikacja zablokowana\" if trigger.json.reason == \"blocked\" else \"telefon zablokowany\" }}. Odpowiedz w powiadomieniu lub w Pulse.",
+     "data": {
+      "tag": "guard_prosba___ID__",
+      "actions": "{{ [{'action': 'GUARD_P15___ID__', 'title': '+15 min'}, {'action': 'GUARD_P30___ID__', 'title': '+30 min'}, {'action': 'GUARD_NO___ID__', 'title': 'Odmów'}] if trigger.json.reason == 'full' and is_state('input_boolean.guard_limit_blok___ID__', 'on') else [{'action': 'GUARD_UNLOCK___ID__', 'title': 'Odblokuj telefon'}, {'action': 'GUARD_NO___ID__', 'title': 'Odmów'}] if trigger.json.reason == 'full' else [{'action': 'GUARD_A15___ID__', 'title': 'Odblokuj 15 min'}, {'action': 'GUARD_A30___ID__', 'title': 'Odblokuj 30 min'}, {'action': 'GUARD_NO___ID__', 'title': 'Odmów'}] if trigger.json.reason == 'blocked' else [{'action': 'GUARD_P15___ID__', 'title': '+15 min'}, {'action': 'GUARD_P30___ID__', 'title': '+30 min'}, {'action': 'GUARD_NO___ID__', 'title': 'Odmów'}] }}"
+     }
+    }
+   }
+  ],
+  "mode": "queued",
+  "max": 5
+ },
+ "aurora_guard_prosba_odp___ID__": {
+  "id": "aurora_guard_prosba_odp___ID__",
+  "alias": "Aurora Guard: odpowiedź na prośbę __NAME__",
+  "triggers": [
+   {
+    "trigger": "event",
+    "event_type": "mobile_app_notification_action",
+    "event_data": {
+     "action": "GUARD_P15___ID__"
+    }
+   },
+   {
+    "trigger": "event",
+    "event_type": "mobile_app_notification_action",
+    "event_data": {
+     "action": "GUARD_P30___ID__"
+    }
+   },
+   {
+    "trigger": "event",
+    "event_type": "mobile_app_notification_action",
+    "event_data": {
+     "action": "GUARD_NO___ID__"
+    }
+   },
+   {
+    "trigger": "event",
+    "event_type": "mobile_app_notification_action",
+    "event_data": {
+     "action": "GUARD_UNLOCK___ID__"
+    }
+   },
+   {
+    "trigger": "event",
+    "event_type": "mobile_app_notification_action",
+    "event_data": {
+     "action": "GUARD_A15___ID__"
+    }
+   },
+   {
+    "trigger": "event",
+    "event_type": "mobile_app_notification_action",
+    "event_data": {
+     "action": "GUARD_A30___ID__"
+    }
+   }
+  ],
+  "actions": [
+   {
+    "choose": [
+     {
+      "conditions": [
+       {
+        "condition": "template",
+        "value_template": "{{ trigger.event.data.action in ['GUARD_P15___ID__', 'GUARD_P30___ID__'] }}"
+       }
+      ],
+      "sequence": [
+       {
+        "action": "input_number.set_value",
+        "target": {
+         "entity_id": "input_number.guard_bonus___ID__"
+        },
+        "data": {
+         "value": "{{ [ (states('input_number.guard_bonus___ID__') | float(0)) + (15 if trigger.event.data.action == 'GUARD_P15___ID__' else 30), 600 ] | min }}"
+        }
+       }
+      ]
+     },
+     {
+      "conditions": [
+       {
+        "condition": "template",
+        "value_template": "{{ trigger.event.data.action in ['GUARD_A15___ID__', 'GUARD_A30___ID__'] }}"
+       }
+      ],
+      "sequence": [
+       {
+        "variables": {
+         "mins": "{{ 15 if trigger.event.data.action == 'GUARD_A15___ID__' else 30 }}",
+         "pkg": "{{ states('input_text.guard_prosba___ID__').split('|')[2] | default('') }}"
+        }
+       },
+       {
+        "condition": "template",
+        "value_template": "{{ pkg != '' }}"
+       },
+       {
+        "action": "input_text.set_value",
+        "target": {
+         "entity_id": "input_text.guard_odblokuj___ID__"
+        },
+        "data": {
+         "value": "{% set t = now().timestamp() | int %}{% set cur = states('input_text.guard_odblokuj___ID__') %}{% set ns = namespace(l=[]) %}{% if cur not in ['unknown', 'unavailable', ''] %}{% for x in cur.split(';') %}{% set q = x.split('|') %}{% if q | length == 2 and q[1] | int(0) > t and q[0] != pkg %}{% set ns.l = ns.l + [x] %}{% endif %}{% endfor %}{% endif %}{{ (ns.l + [pkg ~ '|' ~ (t + mins * 60)]) | join(';') }}"
+        }
+       }
+      ]
+     },
+     {
+      "conditions": [
+       {
+        "condition": "template",
+        "value_template": "{{ trigger.event.data.action == 'GUARD_UNLOCK___ID__' }}"
+       }
+      ],
+      "sequence": [
+       {
+        "action": "input_boolean.turn_off",
+        "target": {
+         "entity_id": "input_boolean.blokada_telefon___ID___caly"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "action": "input_text.set_value",
+    "target": {
+     "entity_id": "input_text.guard_wiadomosc___ID__"
+    },
+    "data": {
+     "value": "{{ (now().timestamp() | int) }}|{{ 'Rodzic odrzucił Twoją prośbę o więcej czasu.' if trigger.event.data.action == 'GUARD_NO___ID__' else 'Rodzic odblokował Twój telefon.' if trigger.event.data.action == 'GUARD_UNLOCK___ID__' else 'Rodzic odblokował ' ~ (states('input_text.guard_prosba___ID__').split('|')[1] | default('aplikację')) ~ ' na ' ~ (15 if trigger.event.data.action == 'GUARD_A15___ID__' else 30) ~ ' min.' if trigger.event.data.action in ['GUARD_A15___ID__', 'GUARD_A30___ID__'] else 'Rodzic dodał Ci ' ~ (15 if trigger.event.data.action == 'GUARD_P15___ID__' else 30) ~ ' min.' }}"
+    }
+   },
+   {
+    "action": "input_text.set_value",
+    "target": {
+     "entity_id": "input_text.guard_prosba___ID__"
+    },
+    "data": {
+     "value": ""
+    }
+   }
+  ],
+  "mode": "queued"
+ },
+ "aurora_guard_sabotaz___ID__": {
+  "id": "aurora_guard_sabotaz___ID__",
+  "alias": "Aurora Guard: ostrzeżenie o ingerencji __NAME__",
+  "triggers": [
+   {
+    "trigger": "webhook",
+    "webhook_id": "__HOOK__",
+    "local_only": false,
+    "allowed_methods": [
+     "POST"
+    ]
+   }
+  ],
+  "conditions": [
+   {
+    "condition": "template",
+    "value_template": "{{ trigger.json.type | default('') == 'tamper' }}"
+   }
+  ],
+  "actions": [
+   {
+    "action": "counter.increment",
+    "target": {
+     "entity_id": "counter.guard_sabotaz___ID__"
+    }
+   },
+   {
+    "action": "notify.mobile_app_TELEFON_RODZICA",
+    "data": {
+     "title": "⚠ __NAME__: ingerencja w aplikacji",
+     "message": "{{ trigger.json.what | default(\"Zmiana w aplikacji Aurora Guard\") }}",
+     "data": {
+      "tag": "guard_sab___ID__"
+     }
+    }
+   }
+  ],
+  "mode": "queued",
+  "max": 5
+ },
+ "aurora_guard_offline___ID__": {
+  "id": "aurora_guard_offline___ID__",
+  "alias": "Aurora Guard: brak kontaktu z telefonem __NAME__",
+  "triggers": [
+   {
+    "trigger": "template",
+    "value_template": "{{ state_attr('sensor.aurora_guard___ID___status','last_seen') is not none and (as_timestamp(now()) - as_timestamp(state_attr('sensor.aurora_guard___ID___status','last_seen'), 0)) > 2400 and (state_attr('sensor.aurora_guard___ID___status','sleep_until') | float(0)) < as_timestamp(now()) }}"
+   },
+   {
+    "trigger": "state",
+    "entity_id": "sensor.aurora_guard___ID___status",
+    "to": "brak_dostepnosci"
+   }
+  ],
+  "actions": [
+   {
+    "action": "notify.mobile_app_TELEFON_RODZICA",
+    "data": {
+     "title": "⚠ __NAME__: telefon bez kontaktu / usługa wyłączona",
+     "message": "{{ 'Usługa dostępności wyłączona na telefonie.' if trigger.platform == 'state' else 'Brak raportu z telefonu od ponad 40 minut (wyłączony, bez sieci albo aplikacja usunięta).' }}",
+     "data": {
+      "tag": "guard_off___ID__"
+     }
+    }
+   }
+  ],
+  "mode": "single"
+ },
+ "aurora_guard_noc___ID__": {
+  "id": "aurora_guard_noc___ID__",
+  "alias": "Aurora Guard: cisza nocna __NAME__",
+  "description": "schedule.guard_noc___ID__ -> blokada calego telefonu (wymaga input_boolean.guard_harmonogram___ID__)",
+  "triggers": [
+   {
+    "trigger": "state",
+    "entity_id": "schedule.guard_noc___ID__"
+   },
+   {
+    "trigger": "state",
+    "entity_id": "input_boolean.guard_harmonogram___ID__"
+   },
+   {
+    "trigger": "homeassistant",
+    "event": "start"
+   }
+  ],
+  "conditions": [
+   {
+    "condition": "state",
+    "entity_id": "input_boolean.guard_harmonogram___ID__",
+    "state": "on"
+   }
+  ],
+  "actions": [
+   {
+    "if": [
+     {
+      "condition": "state",
+      "entity_id": "schedule.guard_noc___ID__",
+      "state": "on"
+     }
+    ],
+    "then": [
+     {
+      "action": "input_boolean.turn_on",
+      "target": {
+       "entity_id": "input_boolean.blokada_telefon___ID___caly"
+      }
+     }
+    ],
+    "else": [
+     {
+      "action": "input_boolean.turn_off",
+      "target": {
+       "entity_id": "input_boolean.blokada_telefon___ID___caly"
+      }
+     }
+    ]
+   }
+  ],
+  "mode": "restart"
+ },
+ "aurora_guard_lekcje___ID__": {
+  "id": "aurora_guard_lekcje___ID__",
+  "alias": "Aurora Guard: czas lekcji __NAME__",
+  "description": "schedule.guard_lekcje___ID__ -> blokada aplikacji z listy (tylko gdy tryb auto wylaczony)",
+  "triggers": [
+   {
+    "trigger": "state",
+    "entity_id": "schedule.guard_lekcje___ID__"
+   },
+   {
+    "trigger": "state",
+    "entity_id": "input_boolean.guard_harmonogram___ID__"
+   }
+  ],
+  "conditions": [
+   {
+    "condition": "state",
+    "entity_id": "input_boolean.guard_harmonogram___ID__",
+    "state": "on"
+   },
+   {
+    "condition": "state",
+    "entity_id": "input_boolean.auto_blokada_telefonu___ID__",
+    "state": "off"
+   }
+  ],
+  "actions": [
+   {
+    "if": [
+     {
+      "condition": "state",
+      "entity_id": "schedule.guard_lekcje___ID__",
+      "state": "on"
+     }
+    ],
+    "then": [
+     {
+      "action": "input_boolean.turn_on",
+      "target": {
+       "entity_id": "input_boolean.blokada_telefon___ID__"
+      }
+     }
+    ],
+    "else": [
+     {
+      "action": "input_boolean.turn_off",
+      "target": {
+       "entity_id": "input_boolean.blokada_telefon___ID__"
+      }
+     }
+    ]
+   }
+  ],
+  "mode": "restart"
+ },
+ "aurora_guard_szkola___ID__": {
+  "id": "aurora_guard_szkola___ID__",
+  "alias": "Aurora Guard: strefa Szkoła __NAME__",
+  "description": "Wymaga strefy o nazwie \"Szkoła\". Blokada aplikacji w szkole, gdy input_boolean.guard_strefa___ID__ = on",
+  "triggers": [
+   {
+    "trigger": "state",
+    "entity_id": "device_tracker.guard___ID__",
+    "to": "Szkoła",
+    "id": "in"
+   },
+   {
+    "trigger": "state",
+    "entity_id": "device_tracker.guard___ID__",
+    "from": "Szkoła",
+    "id": "out"
+   }
+  ],
+  "actions": [
+   {
+    "action": "notify.mobile_app_TELEFON_RODZICA",
+    "data": {
+     "title": "__NAME__",
+     "message": "{{ 'dotarł(a) do szkoły' if trigger.id == 'in' else 'wyszedł(a) ze szkoły' }}",
+     "data": {
+      "tag": "guard_szkola___ID__"
+     }
+    }
+   },
+   {
+    "if": [
+     {
+      "condition": "state",
+      "entity_id": "input_boolean.guard_strefa___ID__",
+      "state": "on"
+     }
+    ],
+    "then": [
+     {
+      "choose": [
+       {
+        "conditions": [
+         {
+          "condition": "trigger",
+          "id": "in"
+         }
+        ],
+        "sequence": [
+         {
+          "action": "input_boolean.turn_on",
+          "target": {
+           "entity_id": "input_boolean.blokada_telefon___ID__"
+          }
+         }
+        ]
+       },
+       {
+        "conditions": [
+         {
+          "condition": "trigger",
+          "id": "out"
+         }
+        ],
+        "sequence": [
+         {
+          "action": "input_boolean.turn_off",
+          "target": {
+           "entity_id": "input_boolean.blokada_telefon___ID__"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "mode": "queued"
+ },
+ "aurora_guard_limit_telefonu___ID__": {
+  "id": "aurora_guard_limit_telefonu___ID__",
+  "alias": "Aurora Guard: dzienny limit telefonu __NAME__",
+  "description": "Po przekroczeniu dziennego limitu (input_number.guard_limit_telefonu___ID__, 0 = wylaczony; z bonusem) blokuje caly telefon do polnocy albo do zwiekszenia limitu/bonusu.",
+  "triggers": [
+   {
+    "trigger": "template",
+    "id": "over",
+    "value_template": "{{ states('input_number.guard_limit_telefonu___ID__') | float(0) > 0 and states('sensor.aurora_guard___ID___usage') | float(0) >= states('input_number.guard_limit_telefonu___ID__') | float(0) + states('input_number.guard_bonus___ID__') | float(0) }}"
+   },
+   {
+    "trigger": "template",
+    "id": "under",
+    "value_template": "{{ not (states('input_number.guard_limit_telefonu___ID__') | float(0) > 0 and states('sensor.aurora_guard___ID___usage') | float(0) >= states('input_number.guard_limit_telefonu___ID__') | float(0) + states('input_number.guard_bonus___ID__') | float(0)) }}"
+   },
+   {
+    "trigger": "time",
+    "id": "midnight",
+    "at": "00:00:10"
+   }
+  ],
+  "actions": [
+   {
+    "choose": [
+     {
+      "conditions": [
+       {
+        "condition": "trigger",
+        "id": "over"
+       },
+       {
+        "condition": "state",
+        "entity_id": "input_boolean.guard_limit_blok___ID__",
+        "state": "off"
+       }
+      ],
+      "sequence": [
+       {
+        "action": "input_boolean.turn_on",
+        "target": {
+         "entity_id": [
+          "input_boolean.blokada_telefon___ID___caly",
+          "input_boolean.guard_limit_blok___ID__"
+         ]
+        }
+       },
+       {
+        "action": "input_text.set_value",
+        "target": {
+         "entity_id": "input_text.guard_wiadomosc___ID__"
+        },
+        "data": {
+         "value": "{{ (now().timestamp() | int) }}|Dzienny limit czasu na telefonie się skończył. Możesz poprosić rodzica o więcej czasu."
+        }
+       }
+      ]
+     },
+     {
+      "conditions": [
+       {
+        "condition": "trigger",
+        "id": [
+         "under",
+         "midnight"
+        ]
+       },
+       {
+        "condition": "state",
+        "entity_id": "input_boolean.guard_limit_blok___ID__",
+        "state": "on"
+       },
+       {
+        "condition": "template",
+        "value_template": "{{ states('sensor.aurora_guard___ID___usage') not in ['unavailable', 'unknown'] }}"
+       }
+      ],
+      "sequence": [
+       {
+        "action": "input_boolean.turn_off",
+        "target": {
+         "entity_id": [
+          "input_boolean.blokada_telefon___ID___caly",
+          "input_boolean.guard_limit_blok___ID__"
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "mode": "queued",
+  "max": 5
+ },
+ "blokada_telefonu___ID___auto": {
+  "id": "blokada_telefonu___ID___auto",
+  "alias": "Blokada telefonu __NAME__: tryb auto",
+  "description": "Gdy włączony jest tryb auto (input_boolean.auto_blokada_telefonu___ID__): blokada telefonu jest włączona, dopóki zadania dziecka nie są wykonane. Przy wyłączonym trybie auto blokadą steruje się ręcznie w Aurora Pulse (Multimedia).",
+  "triggers": [
+   {
+    "trigger": "state",
+    "entity_id": [
+     "binary_sensor.zadania___ID___wykonane",
+     "input_boolean.auto_blokada_telefonu___ID__"
+    ]
+   },
+   {
+    "trigger": "homeassistant",
+    "event": "start"
+   }
+  ],
+  "conditions": [
+   {
+    "condition": "state",
+    "entity_id": "input_boolean.auto_blokada_telefonu___ID__",
+    "state": "on"
+   }
+  ],
+  "actions": [
+   {
+    "if": [
+     {
+      "condition": "state",
+      "entity_id": "binary_sensor.zadania___ID___wykonane",
+      "state": "on"
+     }
+    ],
+    "then": [
+     {
+      "action": "input_boolean.turn_off",
+      "target": {
+       "entity_id": "input_boolean.blokada_telefon___ID__"
+      }
+     }
+    ],
+    "else": [
+     {
+      "action": "input_boolean.turn_on",
+      "target": {
+       "entity_id": "input_boolean.blokada_telefon___ID__"
+      }
+     }
+    ]
+   }
+  ],
+  "mode": "restart"
+ }
+}

@@ -37,7 +37,7 @@ MODULES = [
      'need': 'Wymaga integracji „F1 Sensor” (HACS) – encje sensor.f1_*.'},
     {'id': 'guard', 'name': 'Aurora Guard', 'icon': 'mdi:shield-lock-outline', 'views': ['guard'],
      'desc': 'Blokowanie aplikacji i całego telefonu dziecka z poziomu dashboardu, limity czasu, lokalizacja, tryb nocny.',
-     'need': 'Wymaga aplikacji Android „Aurora Guard” na telefonie dziecka (github.com/jaque66/aurora-guard, plik APK z wydania) oraz konfiguracji w Home Assistant: helpery, szablony webhooka i listy todo z szablonu z repozytorium (katalog homeassistant/). Bez tego karta Guard pokaże puste dane.'},
+     'need': 'Wymaga aplikacji Android „Aurora Guard” na telefonie dziecka (github.com/jaque66/aurora-guard, plik APK z wydania). Konfigurację w Home Assistant (pomocniki, listy, szablony webhooka, automatyzacje) tworzy kreator w zakładce „Urządzenia Guard” – tam też dodasz kolejne urządzenia.'},
 ]
 MOD_VIEWS = {v: m['id'] for m in MODULES for v in m['views']}
 DOCK_EXTRA = [('lights', 'Światła', 'mdi:lightbulb-group-outline'), ('rooms', 'Pokoje', 'mdi:sofa-outline'), ('events', 'Wydarzenia', 'mdi:calendar-clock-outline')]

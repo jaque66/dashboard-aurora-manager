@@ -22,6 +22,7 @@ const grad = (c) => 'linear-gradient(135deg,' + c + ')';
 async function boot() {
   INFO = await api('api/info'); $('#ver').textContent = 'v' + INFO.version;
   $$('[data-go="list"]').forEach((a) => a.onclick = (e) => { e.preventDefault(); showList(); });
+  $$('[data-go="guard"]').forEach((a) => a.onclick = (e) => { e.preventDefault(); showGuard(); });
   showList();
 }
 
@@ -228,6 +229,76 @@ async function doSave() {
   try { const r = await api('api/save', {body: D}); D.id = r.record.id; D.path = r.record.path; $('#res').innerHTML = `<div class="card ok"><b>Gotowe.</b> Dashboard: <a href="/${esc(r.record.path)}/home" target="_top" style="color:var(--a)">/${esc(r.record.path)}</a>${r.messages.length ? '<div class="sub">' + r.messages.map(esc).join('<br>') + '</div>' : ''}</div>`; toast('Zapisano dashboard.'); b.textContent = 'Zapisz zmiany'; }
   catch (e) { $('#res').innerHTML = '<div class="card err">Błąd: ' + esc(e.message) + '</div>'; b.textContent = D.id ? 'Zapisz zmiany' : 'Utwórz dashboard'; }
   b.disabled = false;
+}
+
+
+/* ---------------- Urzadzenia Aurora Guard + kreator dodawania ---------------- */
+let GW = null;
+const slugId = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ł/g, 'l').replace(/Ł/g, 'L').toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 20);
+const idOk = (i) => /^[a-z][a-z0-9_]{1,19}$/.test(i);
+async function showGuard() {
+  D = null; GW = null; const app = $('#app'); app.innerHTML = '<div class="card">Wczytywanie urządzeń Guard…</div>';
+  let devs; try { devs = await api('api/guard/devices'); } catch (e) { app.innerHTML = '<div class="card err">Błąd: ' + esc(e.message) + '</div>'; return; }
+  const ago = (iso) => { const t = Date.parse(String(iso || '').replace(/(\d\d)(\d\d)$/, '$1:$2')); if (isNaN(t)) return '—'; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'przed chwilą' : m < 90 ? m + ' min temu' : m < 2880 ? Math.round(m / 60) + ' godz. temu' : Math.round(m / 1440) + ' dni temu'; };
+  app.innerHTML = `<h1>Urządzenia Aurora Guard</h1><div class="sub">Telefony i tablety dzieci pod kontrolą rodzica. Kreator tworzy w Home Assistancie wszystko, czego potrzebuje nowe urządzenie, i pokazuje dane do wpisania w aplikacji.</div>
+    <div class="row" style="margin:14px 0"><button id="gnew">+ Dodaj urządzenie</button></div>
+    <div class="grid">${devs.map((d) => `<div class="card"><h3>${esc(d.name)} <small class="sub">(${esc(d.id)})</small></h3>
+      <div class="sub">${d.last_seen ? 'ostatni kontakt: ' + esc(ago(d.last_seen)) : 'brak kontaktu z aplikacją'}${d.version ? ' · v' + esc(d.version) : ''}${d.battery != null ? ' · bateria ' + esc(d.battery) + '%' : ''}</div>
+      <div class="sub" style="margin-top:4px">${d.full ? '🔒 cały telefon zablokowany' : d.apps ? '🔒 blokada aplikacji' : '🔓 bez blokady'}</div>
+      <div class="row" style="margin-top:10px">${d.wizard ? `<button class="s d" data-grm="${esc(d.id)}">Usuń urządzenie</button>` : '<span class="sub">dodane ręcznie – usuń w Home Assistancie</span>'}</div></div>`).join('') || '<div class="card sub">Brak urządzeń.</div>'}</div>`;
+  $('#gnew').onclick = () => startGuardWizard();
+  $$('[data-grm]').forEach((b) => b.onclick = async () => { const id = b.dataset.grm; if (!confirm('Usunąć urządzenie „' + id + '” razem ze wszystkimi pomocnikami, listami i automatyzacjami, które utworzył kreator? Aplikację na telefonie odinstaluj osobno.')) return; b.disabled = true; try { const r = await api('api/guard/remove', {body: {id}}); toast('Usunięto urządzenie.'); showGuard(); } catch (e) { toast('Błąd: ' + e.message); b.disabled = false; } });
+}
+async function startGuardWizard() {
+  $('#app').innerHTML = '<div class="card">Sprawdzanie Home Assistanta…</div>';
+  let o; try { o = await api('api/guard/options'); } catch (e) { toast('Błąd: ' + e.message); return showGuard(); }
+  GW = {step: 1, name: '', id: '', idTouched: false, notify: (o.default_notify || []).filter((n) => o.notify.includes(n)), dashboards: o.dashboards.map((d) => d.url_path), auto: false, opt: o, res: null};
+  renderGW();
+}
+function renderGW() {
+  const W = GW, steps = ['1 · Urządzenie', '2 · Powiadomienia i dashboardy', '3 · Podsumowanie', '4 · Dane do aplikacji'], app = $('#app');
+  app.innerHTML = `<h1>Nowe urządzenie Aurora Guard</h1><div class="steps">${steps.map((t, i) => `<button class="${W.step === i + 1 ? 'on' : i + 1 < W.step ? 'ok' : ''}" disabled>${t}</button>`).join('')}</div><div id="gstep"></div>
+    <div class="foot"><button class="g" id="gback" ${W.step === 1 || W.step === 4 ? 'disabled' : ''}>← Wstecz</button>${W.step === 3 ? '<button id="gdo">Utwórz urządzenie</button>' : W.step === 4 ? '<button id="gdone">Zakończ</button>' : '<button id="gnext">Dalej →</button>'}</div>`;
+  const el = $('#gstep');
+  if (W.step === 1) {
+    el.innerHTML = `<div class="card"><label class="f">Nazwa (np. imię dziecka lub „Tablet salon”)</label><input type="text" id="gn" value="${esc(W.name)}" maxlength="30" placeholder="np. Ola">
+      <label class="f">Identyfikator (małe litery, cyfry i _; tworzy nazwy encji w HA)</label><input type="text" id="gi" value="${esc(W.id)}" maxlength="20" placeholder="np. ola">
+      <div class="sub" id="gih" style="margin-top:6px"></div>
+      <div class="sub" style="margin-top:12px">Identyfikator wpiszesz też w aplikacji na urządzeniu. Nie można go później zmienić. Istniejące urządzenia: ${W.opt.devices.map((d) => esc(d.id)).join(', ') || 'brak'}.</div></div>`;
+    const gn = $('#gn'), gi = $('#gi'), hint = () => { const i = W.id; $('#gih').innerHTML = !i ? '' : !idOk(i) ? '<span class="err">Identyfikator: litera na początku, potem małe litery, cyfry lub _ (2–20 znaków).</span>' : W.opt.devices.some((d) => d.id === i) ? '<span class="err">Takie urządzenie już istnieje.</span>' : '<span class="ok">OK – encje będą miały nazwy np. input_boolean.blokada_telefon_' + esc(i) + '</span>'; };
+    gn.oninput = () => { W.name = gn.value; if (!W.idTouched) { W.id = slugId(W.name); gi.value = W.id; } hint(); };
+    gi.oninput = () => { W.idTouched = true; W.id = gi.value.toLowerCase().replace(/[^a-z0-9_]/g, ''); gi.value = W.id; hint(); }; hint();
+  } else if (W.step === 2) {
+    const o = W.opt;
+    el.innerHTML = `<div class="card"><h3>Powiadomienia dla rodziców</h3><div class="sub" style="margin-bottom:6px">Na te telefony trafią prośby o czas, ostrzeżenia o ingerencji, brak kontaktu i raport tygodniowy. Zaznacz telefony <b>rodziców</b> (nie dzieci).${W.notify.length ? ' Zaznaczyłem te, które dostają już powiadomienia Aurora Guard.' : ''}</div>
+      ${o.notify.map((n) => `<label class="c"><input type="checkbox" data-n="${esc(n)}" ${W.notify.includes(n) ? 'checked' : ''}>${esc(n.replace('notify.mobile_app_', ''))}<small>${esc(n)}</small></label>`).join('') || '<div class="sub warn">Nie znaleziono telefonów z aplikacją Home Assistant (notify.mobile_app_…). Powiadomienia nie zostaną utworzone.</div>'}</div>
+      <div class="card"><h3>Dashboardy Aurora Pulse</h3><div class="sub" style="margin-bottom:6px">Urządzenie pojawi się w widoku Aurora Guard wybranych dashboardów.</div>
+      ${o.dashboards.map((d) => `<label class="c"><input type="checkbox" data-d="${esc(d.url_path)}" ${W.dashboards.includes(d.url_path) ? 'checked' : ''}>${esc(d.title)}<small>/${esc(d.url_path)}</small></label>`).join('') || '<div class="sub">Nie znaleziono dashboardów z kartą Aurora Pulse.</div>'}</div>
+      <div class="card"><label class="c"><input type="checkbox" id="gauto" ${W.auto ? 'checked' : ''}>Tryb auto (blokada do wykonania zadań)<small>tworzy listę zadań „Zadania ${esc(W.id)}” i czujnik „zadania wykonane”</small></label></div>`;
+    $$('[data-n]', el).forEach((c) => c.onchange = () => { W.notify = $$('[data-n]', el).filter((x) => x.checked).map((x) => x.dataset.n); });
+    $$('[data-d]', el).forEach((c) => c.onchange = () => { W.dashboards = $$('[data-d]', el).filter((x) => x.checked).map((x) => x.dataset.d); });
+    $('#gauto').onchange = (e) => { W.auto = e.target.checked; };
+  } else if (W.step === 3) {
+    el.innerHTML = `<div class="card"><h3>${esc(W.name)} <small class="sub">(${esc(W.id)})</small></h3>
+      <ul><li>27 pomocników (blokady, limity, harmonogramy, liczniki, komunikaty)</li><li>listy Local To-do: aplikacje do blokowania, dozwolone${W.auto ? ', zadania dziecka' : ''}</li><li>czujniki z webhooka: status, aplikacje, użycie, reguły, lokalizacja</li><li>${W.auto ? 9 : 8} automatyzacji (prośby o czas, ingerencja, brak kontaktu, harmonogram, limit, strefa Szkoła)</li>
+      <li>powiadomienia: ${W.notify.length ? W.notify.map((n) => esc(n.replace('notify.mobile_app_', ''))).join(', ') : '<span class="warn">brak</span>'}</li><li>dashboardy: ${W.dashboards.length ? W.dashboards.map(esc).join(', ') : 'żaden'}</li></ul>
+      <div class="sub">Kreator zapisze plik <code>templates/aurora_guard_${esc(W.id)}.yaml</code> i przeładuje szablony oraz automatyzacje w Home Assistancie. Nic nie jest usuwane ani nadpisywane (poza raportem tygodniowym i zerowaniem bonusu, które obejmą nowe urządzenie).</div></div><div id="gres"></div>`;
+  } else {
+    const r = W.res, a = r.app || {};
+    el.innerHTML = `<div class="card ${r.ok ? '' : 'err'}"><h3>${r.ok ? 'Urządzenie dodane' : 'Nie udało się dokończyć'}</h3><div class="list">${r.steps.map((s) => `<div class="it"><b>${s.ok ? '✓' : '✕'} ${esc(s.t)}</b><small>${esc(s.m || '')}</small></div>`).join('')}</div></div>
+      ${r.ok ? `<div class="card"><h3>Dane do wpisania w aplikacji na urządzeniu</h3>
+        <ol class="sub" style="line-height:1.7;padding-left:18px"><li>Pobierz aplikację: <a href="${esc(a.apk)}" target="_blank" style="color:var(--a)">Aurora Guard (najnowsze wydanie)</a> i zainstaluj APK (może wymagać wyłączenia skanowania Play Protect).</li>
+        <li>Włącz usługę dostępności Aurora Guard (lista Uprawnienia w aplikacji prowadzi do ustawień) i zezwól na dostęp do danych o użyciu.</li>
+        <li>W Ustawienia (⚙) → Połączenie z HA wpisz:</li></ol>
+        ${[['Adres zewnętrzny', a.url_external || 'https://twoj-adres-ha'], ['Adres wewnętrzny (Wi-Fi)', a.url_internal || ''], ['Identyfikator telefonu', a.device], ['Identyfikator webhooka', a.webhook]].map((x) => `<div class="row" style="margin:6px 0"><div style="flex:1"><div class="sub">${x[0]}</div><b style="word-break:break-all">${esc(x[1]) || '—'}</b></div>${x[1] ? `<button class="s g" data-copy="${esc(x[1])}">Kopiuj</button>` : ''}</div>`).join('')}
+        <div class="sub" style="margin-top:8px"><b>Token dostępu</b> utwórz w Home Assistancie: Profil (zwykłe konto bez uprawnień administratora, najlepiej osobne dla aplikacji) → Zabezpieczenia → Długoterminowe tokeny dostępu. Webhook traktuj jak hasło.</div>
+        <div class="sub" style="margin-top:8px">Po zapisaniu ustawień w aplikacji urządzenie zgłosi się w Pulse (widok Aurora Guard) po kilku minutach.</div></div>` : ''}`;
+    $$('[data-copy]', el).forEach((b) => b.onclick = () => { try { navigator.clipboard.writeText(b.dataset.copy); toast('Skopiowano.'); } catch (e) { toast('Skopiuj ręcznie.'); } });
+  }
+  $('#gback') && ($('#gback').onclick = () => { W.step--; renderGW(); });
+  const nx = $('#gnext'); if (nx) nx.onclick = () => { if (W.step === 1) { if (!W.name.trim()) return toast('Podaj nazwę urządzenia.'); if (!idOk(W.id)) return toast('Popraw identyfikator.'); if (W.opt.devices.some((d) => d.id === W.id)) return toast('Takie urządzenie już istnieje.'); } W.step++; renderGW(); };
+  const dn = $('#gdone'); if (dn) dn.onclick = () => showGuard();
+  const go = $('#gdo'); if (go) go.onclick = async () => { go.disabled = true; go.textContent = 'Tworzenie… (to potrwa kilkanaście sekund)'; try { W.res = await api('api/guard/create', {body: {name: W.name, id: W.id, notify: W.notify, dashboards: W.dashboards, auto_mode: W.auto}}); } catch (e) { W.res = {ok: false, steps: [{t: 'Kreator', ok: false, m: e.message}]}; } W.step = 4; renderGW(); };
 }
 
 boot().catch((e) => { $('#app').innerHTML = '<div class="card err">Błąd: ' + esc(e.message) + '</div>'; });

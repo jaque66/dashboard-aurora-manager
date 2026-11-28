@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.6.0 – 2026-11-28
+
+**PL**
+- **Kreator „Urządzenia Guard”** (nowa zakładka w nagłówku): lista telefonów i tabletów pod kontrolą Aurora Guard oraz prosty kreator dodawania kolejnego urządzenia (nazwa → powiadomienia i dashboardy → podsumowanie → dane do wpisania w aplikacji). Tworzy w HA pomocniki, listy Local To-do, czujniki z webhooka, automatyzacje i aktualizuje raport tygodniowy; urządzenia dodane kreatorem można usunąć.
+- Widok Guard: nieaktualna instrukcja w kafelku „Czas, limity i bezpieczeństwo” (jak ustawić godziny ciszy nocnej i lekcji) wskazuje teraz sekcję „Harmonogram blokady”.
+- W wydaniu są też zmiany opisane niżej w 3.5.0 (dzienny limit telefonu, edytor harmonogramu, okna dzieci, kłódki, znaczniki, pełny ekran widoków na tablecie, mapa, animacje menu).
+
+**EN**
+- **“Guard devices” wizard** (new tab in the header): a list of the phones and tablets under Aurora Guard and a simple wizard to add another device (name → notifications and dashboards → summary → data to enter in the app). It creates the helpers, Local To-do lists, webhook sensors and automations in HA and updates the weekly report; devices added by the wizard can be removed.
+- Guard view: the outdated hint in the “Time, limits and security” tile (how to set quiet hours and lessons) now points to the “Blocking schedule” section.
+- The release also contains the changes described below under 3.5.0 (daily phone limit, schedule editor, children's blocks, padlocks, markers, full-screen views on the tablet, map, menu animations).
+
 ## 3.5.0 – 2026-11-28
 
 **PL**

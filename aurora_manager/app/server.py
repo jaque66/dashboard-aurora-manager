@@ -7,9 +7,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import manager
 import mgr
+import guard_setup
 
 STATIC = os.path.join(HERE, 'static')
-UI_VERSION = '3.5.0'
+UI_VERSION = '3.6.0'
 TYPES = {'.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png'}
 
 
@@ -43,6 +44,10 @@ class H(BaseHTTPRequestHandler):
                 return self._send(200, mgr.catalog())
             if p == '/api/dashboards':
                 return self._send(200, mgr.list_records())
+            if p == '/api/guard/options':
+                return self._send(200, guard_setup.options())
+            if p == '/api/guard/devices':
+                return self._send(200, guard_setup.devices())
             if p.startswith('/api/dashboards/'):
                 return self._send(200, mgr.get(p.rsplit('/', 1)[1]))
             name = 'mgr.html' if p in ('/', '/index.html') else p.lstrip('/')
@@ -68,6 +73,10 @@ class H(BaseHTTPRequestHandler):
                 return self._send(200, mgr.propose(self._body().get('areas') or []))
             if p == '/api/save':
                 return self._send(200, mgr.save(self._body()))
+            if p == '/api/guard/create':
+                return self._send(200, guard_setup.create(self._body()))
+            if p == '/api/guard/remove':
+                return self._send(200, guard_setup.remove((self._body().get('id') or '').strip()))
             if p == '/api/cards/install':
                 return self._send(200, {'messages': mgr.ensure_cards() or ['Karty są aktualne.'], 'cards': mgr.cards_state()})
             self._send(404, {'error': 'not found'})
