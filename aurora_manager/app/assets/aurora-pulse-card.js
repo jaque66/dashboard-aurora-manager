@@ -1211,12 +1211,12 @@ ha-icon { --mdc-icon-size: 22px; }
 .row .bp { margin-left: auto; margin-right: 8px; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 700; font-style: normal; background: rgba(255,200,90,.22); color: #ffe7b0; flex: none; }
 #gdmfs { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; background: #0b1020; }
 #gdmfs .gmh { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 10px; flex: none; flex-wrap: wrap; }
-#gdmfs .gmh > b { font-size: 18px; font-weight: 600; margin-right: auto; }
+#gdmfs .gmti { margin-right: auto; display: flex; flex-direction: column; min-width: 0; } #gdmfs .gmti b { font-size: 18px; font-weight: 600; } #gdmfs .gmti small { font-size: 12px; opacity: .72; margin-top: 2px; } #gdmfs .gmti small.wn { color: #ffd98a; opacity: 1; }
 #gdmfs .bk { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; }   /* jak w pozostalych widokach (.vh .bk) */
 #gdmfs .gmc button i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; flex: none; }
 #gdmfs .gmt { width: 40px; height: 40px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none; color: inherit; background: rgba(255,255,255,.1); } #gdmfs .gmt[hidden] { display: none; }
 #gdmfs .gmc { display: flex; gap: 6px; flex-wrap: wrap; } #gdmfs .gmc button { width: auto !important; height: auto !important; min-width: 0 !important; aspect-ratio: auto !important; flex: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; padding: 8px 15px; border-radius: 99px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: inherit; font: inherit; font-size: 13px; } #gdmfs .gmc button.on { background: rgba(120,200,255,.25); border-color: rgba(120,200,255,.6); }
-@media (max-width: 760px) { #gdmfs .gmh > b { margin-right: 0; } #gdmfs .gmc { order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; } #gdmfs .gmh { padding-right: 14px; } }
+@media (max-width: 760px) { #gdmfs .gmti { margin-right: 0; flex: 1; } #gdmfs .gmc { order: 3; flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; } #gdmfs .gmh { padding-right: 14px; } }
 #gdmfs .gmb { flex: 1; min-height: 0; position: relative; } #gdmfs .gmb > * { position: absolute; inset: 0; width: 100%; height: 100%; display: block; border: 0; }
 .lts { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 22px 6px; } .lp { display: flex; align-items: center; gap: 8px; padding: 8px 13px 8px 9px; border-radius: 16px; text-align: left; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); transition: background .25s, border-color .25s; } .lp ha-icon { --mdc-icon-size: 20px; opacity: .8; } .lp b { display: block; font-size: 13px; font-weight: 600; line-height: 1.15; } .lp small { display: block; font-size: 10.5px; opacity: .6; } .lp.on { background: color-mix(in srgb, #ffc24b 24%, rgba(255,255,255,.05)); border-color: color-mix(in srgb, #ffc24b 75%, transparent); } .lp.on ha-icon { color: #ffd36b; opacity: 1; filter: drop-shadow(0 0 6px #ffc24b); }
 #pulse.al .alb { position: absolute; inset: 0; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; padding: 34px; background: radial-gradient(circle at 50% 38%, #ff5a76, #9a0f28 72%); box-shadow: 0 0 70px rgba(255,60,90,.75), inset 0 0 40px rgba(255,255,255,.18); animation: alpl 1.1s ease-in-out infinite; }
@@ -1745,7 +1745,7 @@ class AuroraPulseCard extends AuroraBase {
   disconnectedCallback() { this._pClay(false); this._pRib(false); if (this._tdSub) { Object.keys(this._tdSub).forEach((k) => { const u = this._tdSub[k]; if (typeof u === 'function') { try { u(); } catch (e) { /* ignore */ } } }); this._tdSub = null; } if (this._tk) { clearInterval(this._tk); this._tk = null; } if (this._rsT) { clearInterval(this._rsT); this._rsT = null; } this._vsHide(false); const pb = document.getElementById('pulse-vs-btn'); if (pb) pb.remove(); }
   set hass(h) {
     this._hass = h; if (!this._built) return;
-    if (this._gdMapEl) { try { this._gdMapEl.hass = h; } catch (e) { /* ignore */ } }
+    if (this._gdMapEl) { try { this._gdMapEl.hass = h; this._pGdMapAcc(); } catch (e) { /* ignore */ } }
     if (this._rq) return; this._rq = setTimeout(() => { this._rq = null; try { this._pRender(); } catch (e) { console.error('aurora-pulse', e); } }, 120);
   }
   _pSet(id, html) { if (this._pg[id] === html) return false; this._pg[id] = html; const el = this.shadowRoot.getElementById(id); if (el) el.innerHTML = html; return true; }
@@ -2547,7 +2547,7 @@ class AuroraPulseCard extends AuroraBase {
     this._gdMapSel = id || ''; const sel = id ? pos.filter((x) => x.g.id === id) : pos; if (!sel.length) return;
     const COL = ['#ff957c', '#8fe9d3', '#7aa2ff', '#f472b6', '#fbbf24', '#a3e635'], colOf = (gid) => COL[Math.max(0, pos.findIndex((x) => x.g.id === gid)) % COL.length], ini = (g) => { const nm = String(g.name || g.id || '?').trim(), one = nm.charAt(0).toUpperCase(); return pos.filter((x) => String(x.g.name || x.g.id || '?').trim().charAt(0).toUpperCase() === one).length > 1 ? nm.slice(0, 2) : one; };
     const box = document.createElement('div'); box.id = 'gdmfs';
-    box.innerHTML = `<div class="gmh"><button class="bk gl" data-a="gdmapx" aria-label="Zamknij mapę"><ha-icon icon="mdi:arrow-left"></ha-icon></button><b>Mapa telefonów</b><button class="gl gmt" data-a="gdmapth" aria-label="Jasna / ciemna mapa" hidden><ha-icon icon="mdi:theme-light-dark"></ha-icon></button><div class="gmc">${pos.length > 1 ? `<button class="${id ? '' : 'on'}" data-a="gdmapf" data-g="">Wszyscy</button>` : ''}${pos.map((x) => `<button class="${id === x.g.id ? 'on' : ''}" data-a="gdmapf" data-g="${esc(x.g.id)}"><i style="background:${colOf(x.g.id)}"></i>${esc(x.g.name)}</button>`).join('')}</div></div><div class="gmb"></div>`;
+    box.innerHTML = `<div class="gmh"><button class="bk gl" data-a="gdmapx" aria-label="Zamknij mapę"><ha-icon icon="mdi:arrow-left"></ha-icon></button><div class="gmti"><b>Mapa telefonów</b><small class="gmac"></small></div><button class="gl gmt" data-a="gdmapth" aria-label="Jasna / ciemna mapa" hidden><ha-icon icon="mdi:theme-light-dark"></ha-icon></button><div class="gmc">${pos.length > 1 ? `<button class="${id ? '' : 'on'}" data-a="gdmapf" data-g="">Wszyscy</button>` : ''}${pos.map((x) => `<button class="${id === x.g.id ? 'on' : ''}" data-a="gdmapf" data-g="${esc(x.g.id)}"><i style="background:${colOf(x.g.id)}"></i>${esc(x.g.name)}</button>`).join('')}</div></div><div class="gmb"></div>`;
     root.appendChild(box); const mb = box.querySelector('.gmb');
     const osm = () => { const la = sel.map((x) => x.t.attributes.latitude), lo = sel.map((x) => x.t.attributes.longitude), pad = 0.004, a = Math.min.apply(null, la), b = Math.max.apply(null, la), c = Math.min.apply(null, lo), d = Math.max.apply(null, lo);
       mb.innerHTML = `<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=${c - pad * 1.6},${a - pad},${d + pad * 1.6},${b + pad}&layer=mapnik${sel.length === 1 ? `&marker=${la[0]},${lo[0]}` : ''}"></iframe>`; };
@@ -2555,7 +2555,15 @@ class AuroraPulseCard extends AuroraBase {
     if (customElements.get('ha-map')) hm();
     else if (window.loadCardHelpers) window.loadCardHelpers().then((H) => H.createCardElement({type: 'map', entities: ['device_tracker.guard_' + sel[0].g.id]})).then(() => customElements.whenDefined('ha-map')).then(() => hm()).catch(osm);
     else osm();
+    this._pGdMapAcc();
     setTimeout(() => { if (!this._gdMapEl && !mb.firstChild) osm(); }, 4000);
+  }
+  /* dokladnosc lokalizacji (gps_accuracy, m) w naglowku mapy; powyzej 100 m pozycja jest przyblizona (np. z sieci) */
+  _pGdMapAcc() {
+    const el = this.shadowRoot.querySelector('#gdmfs .gmac'); if (!el) return; const st = this._hass.states, id = this._gdMapSel || '';
+    const L = (PC.guard || []).filter((g) => !id || g.id === id).map((g) => ({g, a: (st['device_tracker.guard_' + g.id] || {attributes: {}}).attributes})).filter((x) => x.a.latitude != null);
+    const part = L.map((x) => esc(x.g.name) + (x.a.gps_accuracy ? ' ±' + Math.round(x.a.gps_accuracy) + ' m' : ' · brak dokładności')), rough = L.some((x) => x.a.gps_accuracy > 100);
+    el.innerHTML = part.join(' · ') + (rough ? ' · pozycja przybliżona' : ''); el.classList.toggle('wn', rough);
   }
   _pGdMapTh() { let t = ''; try { t = localStorage.getItem('pulse_gdmap') || ''; } catch (e) { /* ignore */ } return t === 'dark' ? 'dark' : 'light'; }
   _pGdSet(g) {   /* ustawienia aplikacji na telefonie, sterowane z HA (helpery guard_*) */
