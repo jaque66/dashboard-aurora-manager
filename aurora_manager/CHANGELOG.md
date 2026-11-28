@@ -6,13 +6,13 @@
 - Mapa pełnoekranowa w widoku Guard: **przełącznik jasna / ciemna mapa** (ikona w nagłówku). Domyślnie jasna, wybór jest zapamiętywany na urządzeniu.
 - Mapa: czytelne znaczniki (inicjał dziecka zamiast ucinanego imienia, kolorowe kropki przy przyciskach wyboru) i większa strzałka powrotu; w nagłówku **dokładność lokalizacji** (±N m, a powyżej 100 m ostrzeżenie „pozycja przybliżona”).
 - Menu „Więcej”: **krótsze animacje** – kafelki pojawiają się ok. dwa razy szybciej.
-- Tablet: widoki (poza ekranem głównym) **otwierają się na pełny ekran**; zawartość jest wyśrodkowana, a boczny dock zostaje na wierzchu okna.
+- Tablet: widoki (poza ekranem głównym) **otwierają się na pełny ekran** (zawartość wyśrodkowana, boczny dock na wierzchu okna). W Ustawieniach → Wygląd można wybrać „Panel boczny” zamiast pełnego ekranu; wybór jest zapamiętywany na urządzeniu.
 
 **EN**
 - Full-screen map in the Guard view: a **light / dark map switch** (icon in the header). Light by default; the choice is remembered on the device.
 - Map: readable markers (the child's initial instead of a clipped name, colour dots on the selector buttons) and a larger back arrow; the header shows the **location accuracy** (±N m, with a “position approximate” warning above 100 m).
 - “More” menu: **shorter animations** – the tiles appear about twice as fast.
-- Tablet: views (except the home screen) **open full screen**; the content is centred and the side dock stays on top of the window.
+- Tablet: views (except the home screen) **open full screen** (content centred, side dock on top of the window). Settings → Appearance lets you choose the “Side panel” instead; the choice is remembered on the device.
 
 ## 3.2.1 – 2026-11-28
 

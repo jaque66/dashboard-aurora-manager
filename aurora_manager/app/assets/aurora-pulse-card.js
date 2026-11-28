@@ -1553,6 +1553,8 @@ ha-icon { --mdc-icon-size: 22px; }
 #root.tb .rm { width: 100%; max-width: none; padding: 11px 13px; scroll-snap-align: none; }
 #root.tb .rm .rv { margin: 6px 0 7px; } #root.tb .rm .rv b { font-size: 28px; }
 #root.tb #vw { left: 0; right: 0; top: 0; bottom: 0; width: auto; border-radius: 0; border: 0; box-shadow: none; background: linear-gradient(180deg, #0a1020, #060a14); }
+#root.tb.vside #vw { left: auto; width: min(640px, 58vw); right: 0; top: 0; bottom: 0; border-radius: 34px 0 0 34px; border-left: 1px solid rgba(255,255,255,.14); box-shadow: -30px 0 80px rgba(0,0,0,.45); background: linear-gradient(160deg, rgba(14,20,38,.9), rgba(5,9,18,.94)); }
+#root.tb.vside #vw .vh, #root.tb.vside #vw .vb { width: auto; max-width: none; margin-left: 0; margin-right: 0; }
 #root.tb #vw .vh, #root.tb #vw .vb { width: 100%; max-width: min(920px, calc(100% - 220px)); margin-left: auto; margin-right: auto; box-sizing: border-box; }   /* tablet: okno na caly ekran, tresc na srodku, dock (z-index 20) na wierzchu */
 #root.tb .vh { padding: 20px 22px 10px; } #root.tb .vb { padding: 4px 22px 28px; }
 #root.tb #sh { left: auto; right: 0; top: 0; bottom: 0; width: min(560px, 54vw); max-height: none; border-radius: 34px 0 0 34px; padding: 14px 24px 28px; }
@@ -1615,7 +1617,7 @@ ha-icon { --mdc-icon-size: 22px; }
 #ov .bd { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: rgba(4,7,16,.74) !important; animation: none !important; }
 #root.tb #ov .bd { background: rgba(4,7,16,.5) !important; }
 #vw { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: linear-gradient(180deg, rgba(8,12,24,.97), rgba(5,9,18,.99)) !important; }
-#root.tb #vw { background: linear-gradient(180deg, #0a1020, #060a14) !important; }
+#root.tb #vw { background: linear-gradient(180deg, #0a1020, #060a14) !important; } #root.tb.vside #vw { background: linear-gradient(160deg, rgba(14,20,38,.98), rgba(5,9,18,.99)) !important; }
 #sh, #rmn { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 #sh.gl, #rmn.gl { background: linear-gradient(160deg, #1a2440, #0d1224) !important; }
 .rb { filter: none !important; mix-blend-mode: normal !important; }
@@ -1741,7 +1743,7 @@ class AuroraPulseCard extends AuroraBase {
     if (tb) { if (ob) ob.style.order = String(seq.length + 2); } else { const pp = Math.ceil(seq.length / 2); if (ob) ob.style.order = String(pp * 2 + 1); h += mk('more', 998); }
     dk.insertAdjacentHTML('afterbegin', h);
   }
-  _pTb() { const L = this._config && this._config.layout, F = L && typeof L === 'object' ? L.force : L, tb = F === 'tablet' || (F !== 'phone' && window.innerWidth >= 900); const r = this.shadowRoot && this.shadowRoot.getElementById('root'); if (r) { r.classList.toggle('tb', !!tb); let lt = false; try { lt = localStorage.getItem('pulse_lite') === '1' || localStorage.getItem('pastel_lite') === '1'; } catch (x) { /* ignore */ } r.classList.toggle('lt', !!(tb && (lt || (this._config && this._config.lite)))); } this._tb = !!tb; this._pDockBuild(); this._pApplyLayout(); }
+  _pTb() { const L = this._config && this._config.layout, F = L && typeof L === 'object' ? L.force : L, tb = F === 'tablet' || (F !== 'phone' && window.innerWidth >= 900); const r = this.shadowRoot && this.shadowRoot.getElementById('root'); if (r) { r.classList.toggle('tb', !!tb); r.classList.toggle('vside', !!tb && this._pVwm() === 'side'); let lt = false; try { lt = localStorage.getItem('pulse_lite') === '1' || localStorage.getItem('pastel_lite') === '1'; } catch (x) { /* ignore */ } r.classList.toggle('lt', !!(tb && (lt || (this._config && this._config.lite)))); } this._tb = !!tb; this._pDockBuild(); this._pApplyLayout(); }
   connectedCallback() { if (this._built) this._pStart(); }
   disconnectedCallback() { this._pClay(false); this._pRib(false); if (this._tdSub) { Object.keys(this._tdSub).forEach((k) => { const u = this._tdSub[k]; if (typeof u === 'function') { try { u(); } catch (e) { /* ignore */ } } }); this._tdSub = null; } if (this._tk) { clearInterval(this._tk); this._tk = null; } if (this._rsT) { clearInterval(this._rsT); this._rsT = null; } this._vsHide(false); const pb = document.getElementById('pulse-vs-btn'); if (pb) pb.remove(); }
   set hass(h) {
@@ -2566,6 +2568,7 @@ class AuroraPulseCard extends AuroraBase {
     const part = L.map((x) => esc(x.g.name) + (x.a.gps_accuracy ? ' ±' + Math.round(x.a.gps_accuracy) + ' m' : ' · brak dokładności')), rough = L.some((x) => x.a.gps_accuracy > 100);
     el.innerHTML = part.join(' · ') + (rough ? ' · pozycja przybliżona' : ''); el.classList.toggle('wn', rough);
   }
+  _pVwm() { try { return localStorage.getItem('pulse_vwm') === 'side' ? 'side' : 'full'; } catch (e) { return 'full'; } }   /* tablet: okna widokow = pelny ekran (domyslnie) albo panel boczny */
   _pGdMapTh() { let t = ''; try { t = localStorage.getItem('pulse_gdmap') || ''; } catch (e) { /* ignore */ } return t === 'dark' ? 'dark' : 'light'; }
   _pGdSet(g) {   /* ustawienia aplikacji na telefonie, sterowane z HA (helpery guard_*) */
     const S = this._hass.states, lo = S['input_boolean.guard_lokalizacja_' + g.id], ea = 'input_number.guard_lok_poza_' + g.id, eh = 'input_number.guard_lok_dom_' + g.id; if (!lo) return '';
@@ -2641,7 +2644,7 @@ class AuroraPulseCard extends AuroraBase {
     const hs = this._pHs(); let lite = false, hdr = false; try { lite = localStorage.getItem('pastel_lite') === '1'; hdr = localStorage.getItem('pulse_hdr') === '1'; } catch (e) { /* ignore */ }
     const u = this._hass.user && this._hass.user.name, std = !this._pXm() && !this._pMx() && !this._pJv() && !this._pGt() && !this._pTh();   /* kolorystyka dziala tylko w motywie standardowym */
     return `${std ? `<div class="vc gl"><h4>Kolorystyka</h4><div class="schm">${HUD_SCH.map((x) => `<button class="${hs.id === x.id ? 'on' : ''}" data-a="scheme" data-s="${x.id}"><i style="background:linear-gradient(135deg,${x.a},${x.b},${x.c})"></i>${esc(x.n)}</button>`).join('')}</div></div>` : ''}
-      <div class="vc gl"><h4>Wygląd</h4><button class="row${lite ? ' on' : ''}" data-a="lite"><ha-icon icon="mdi:speedometer"></ha-icon><div><b>Tryb oszczędny</b><small>wyłącza animacje tła i kafelków; zegar i pogoda zostają animowane</small></div><span class="sw"></span></button>
+      <div class="vc gl"><h4>Wygląd</h4><button class="row${lite ? ' on' : ''}" data-a="lite"><ha-icon icon="mdi:speedometer"></ha-icon><div><b>Tryb oszczędny</b><small>wyłącza animacje tła i kafelków; zegar i pogoda zostają animowane</small></div><span class="sw"></span></button>${this._tb ? `<div class="note" style="font-size:12px;opacity:.7;margin:12px 4px 6px">Okna widoków na tablecie</div><div class="chq" style="margin-bottom:14px"><button type="button" class="${this._pVwm() === 'side' ? '' : 'on'}" data-a="vwm" data-v="full">Pełny ekran</button><button type="button" class="${this._pVwm() === 'side' ? 'on' : ''}" data-a="vwm" data-v="side">Panel boczny</button></div>` : ''}
       <div class="vc gl" style="margin-bottom:10px"><h4>Motyw</h4><div class="thm">${[['auto', 'Auto (grudzień)'], ['xmas', 'Świąteczny'], ['matrix', 'Matrix'], ['jarvis', 'Jarvis'], ['vice', 'Vice City']].concat(Object.keys(PTHEMES).filter((k) => !(PTHEMES[k].mob && this._pTbNow())).map((k) => [k, PTHEMES[k].n])).concat([['off', 'Standardowy']]).map((x) => `<button class="${(this._pThm() === x[0]) ? 'on' : ''}" data-a="pthm" data-v="${x[0]}">${x[1]}</button>`).join('')}</div>${this._pRibTid === 'ribbon' ? '<div class="note" style="font-size:12px;opacity:.7;margin-top:10px">Wstęga jest częścią motywu „Strumienie”.</div>' : `<button class="row${this._pRibGet(this._pRibTid) ? ' on' : ''}" data-a="pribt" style="margin-top:10px"><ha-icon icon="mdi:chart-bell-curve"></ha-icon><div><b>Wstęga Pulsu w tym motywie</b><small>${this._pRibGet(this._pRibTid) ? 'włączona – animowany pierścień w kolorach motywu' : 'wyłączona – pierścień motywu'}</small></div></button>`}<div class="chq" style="margin-top:8px"><button type="button" data-a="pribw" data-v="1">Wstęga we wszystkich motywach</button><button type="button" data-a="pribw" data-v="0">Wyłącz we wszystkich</button><button type="button" class="${this._pRibMorph() ? 'on' : ''}" data-a="pribm">Wstęga → znak statusu: ${this._pRibMorph() ? 'wł.' : 'wył.'}</button></div></div>
       <button class="row${hdr ? ' on' : ''}" data-a="hdr"><ha-icon icon="mdi:dock-top"></ha-icon><div><b>Górna belka Home Assistanta</b><small>pokaż pasek z nazwą dashboardu</small></div><span class="sw"></span></button></div>
       ${(() => { const pe = this._pipe(), po = pe && this._hass.states[pe]; if (!po) return ''; return `<div class="vc gl"><h4>Potok asystenta</h4><div class="note" style="font-size:12px;opacity:.65;margin:-4px 0 8px">Dotyczy tego urządzenia (${esc(po.attributes.friendly_name || pe)}).</div><div class="ppl">${(po.attributes.options || []).map((x) => `<button class="${x === po.state ? 'on' : ''}" data-a="pipe" data-v="${esc(x)}">${esc(x.charAt(0).toUpperCase() + x.slice(1))}</button>`).join('')}</div></div>`; })()}
@@ -2662,6 +2665,7 @@ class AuroraPulseCard extends AuroraBase {
     if (this._lpFired) { this._lpFired = false; return; }
     const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a;
     if (a === 'closeov') { this._pOv(null); return; }
+    if (a === 'vwm') { try { localStorage.setItem('pulse_vwm', b.dataset.v === 'side' ? 'side' : 'full'); } catch (x) { /* ignore */ } this._pTb(); this._pg.vb = null; this._pVRender(true); return; }
     if (a === 'back') { this._pBack(); return; }
     if (a === 'ltg') { this._call('light', 'toggle', {entity_id: this._lE}); setTimeout(() => { if (this._shF === 'light') this._pSheet('light'); }, 500); return; }
     if (a === 'lcl') { const o = this._hass.states[this._lE], M = (o && o.attributes.supported_color_modes) || [], mn = (o && o.attributes.min_color_temp_kelvin) || 2000, mx = (o && o.attributes.max_color_temp_kelvin) || 6500; const wh = +b.dataset.s === 0;
