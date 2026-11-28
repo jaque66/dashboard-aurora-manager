@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.5.0 – 2026-11-28
+
+**PL**
+- Widok Guard: **dzienny limit telefonu** (wył. / 1 / 1,5 / 2 / 3 / 4 godz.) przy każdym dziecku. Po przekroczeniu (z bonusem) cały telefon blokuje się do północy albo do zwiększenia limitu lub bonusu; prośba o czas pokazuje wtedy „+15 / +30 min”. Wymaga pól `guard_limit_telefonu_<id>`, `guard_limit_blok_<id>` i automatyzacji z repozytorium Aurora Guard.
+- Widok Guard: **edytor harmonogramu blokady** (sekcja „Harmonogram blokady”, dla administratora po kodzie rodzica): godziny „od–do” ciszy nocnej (cały telefon, także przez północ) i lekcji (aplikacje z listy) osobno dla dni roboczych i weekendu – zapisywane w harmonogramach HA `guard_noc_<id>` i `guard_lekcje_<id>`.
+
+**EN**
+- Guard view: a **daily phone limit** (off / 1 / 1.5 / 2 / 3 / 4 h) for each child. Once exceeded (with bonus) the whole phone locks until midnight or until the limit or bonus is raised; a request for time then offers “+15 / +30 min”. Needs the `guard_limit_telefonu_<id>` and `guard_limit_blok_<id>` fields and the automation from the Aurora Guard repository.
+- Guard view: a **blocking schedule editor** (the “Blocking schedule” section, for an administrator after the parent code): “from–to” hours of the night quiet time (whole phone, also across midnight) and lessons (apps on the list), separately for weekdays and weekends – saved in the HA schedules `guard_noc_<id>` and `guard_lekcje_<id>`.
+
 ## 3.4.1 – 2026-11-28
 
 **PL**

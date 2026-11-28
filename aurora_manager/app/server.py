@@ -9,7 +9,7 @@ import manager
 import mgr
 
 STATIC = os.path.join(HERE, 'static')
-UI_VERSION = '3.4.1'
+UI_VERSION = '3.5.0'
 TYPES = {'.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png'}
 
 
