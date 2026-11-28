@@ -7,6 +7,7 @@
 - Mapa: czytelne znaczniki (inicjał dziecka zamiast ucinanego imienia, kolorowe kropki przy przyciskach wyboru) i większa strzałka powrotu; w nagłówku **dokładność lokalizacji** (±N m, a powyżej 100 m ostrzeżenie „pozycja przybliżona”).
 - Menu „Więcej”: **krótsze animacje** – kafelki pojawiają się ok. dwa razy szybciej.
 - Tablet: widoki (poza ekranem głównym) **otwierają się na pełny ekran** (zawartość wyśrodkowana, boczny dock na wierzchu okna). W Ustawieniach → Wygląd można wybrać „Panel boczny” zamiast pełnego ekranu; wybór jest zapamiętywany na urządzeniu.
+- Ustawienia: przełączniki „Wstęga we wszystkich motywach”, „Wstęga zamienia się w znak statusu” i „Okna widoków na pełnym ekranie” mają ten sam wygląd co pozostałe wiersze z przełącznikiem.
 - Guard: **prośba o więcej czasu** – po „Odmów” (i po przyznaniu czasu) dziecko dostaje komunikat na telefonie („Rodzic odrzucił Twoją prośbę…” / „Rodzic dodał Ci +15 min”).
 - Guard: sekcja **„Blokady teraz”** pokazuje, które aplikacje są zablokowane ręcznie przez rodzica, a które z powodu wyczerpanego limitu czasu (z użyciem i bonusem).
 
@@ -15,6 +16,7 @@
 - Map: readable markers (the child's initial instead of a clipped name, colour dots on the selector buttons) and a larger back arrow; the header shows the **location accuracy** (±N m, with a “position approximate” warning above 100 m).
 - “More” menu: **shorter animations** – the tiles appear about twice as fast.
 - Tablet: views (except the home screen) **open full screen** (content centred, side dock on top of the window). Settings → Appearance lets you choose the “Side panel” instead; the choice is remembered on the device.
+- Settings: the “Ribbon in all themes”, “Ribbon turns into the status sign” and “Views in full screen” switches now look like the other switch rows.
 - Guard: **request for more time** – after “Deny” (and after granting time) the child gets a message on the phone (“Your parent declined…” / “Your parent added +15 min”).
 - Guard: a **“Blocks now”** section shows which apps are blocked manually by the parent and which because the time limit ran out (with usage and bonus).
 
