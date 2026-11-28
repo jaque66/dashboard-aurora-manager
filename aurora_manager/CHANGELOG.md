@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.2.0 – 2026-11-28
+
+**PL**
+- Widok **Aurora Guard**: **mapa na pełnym ekranie** (telefon i tablet) – przycisk „Mapa na pełnym ekranie” przy lokalizacji; mapa Home Assistanta z pozycjami telefonów dzieci, przełączana między wszystkimi i pojedynczym dzieckiem (poza HA – mapa OpenStreetMap).
+
+**EN**
+- **Aurora Guard** view: **full-screen map** (phone and tablet) – a “Full-screen map” button in the location section; the Home Assistant map shows the children’s phones, switchable between all and one child (outside HA – an OpenStreetMap embed).
+
 ## 3.1.1 – 2026-11-27
 
 **PL**

@@ -1,5 +1,5 @@
 name: Aurora Manager
-version: "3.1.1"
+version: "3.2.0"
 slug: aurora_manager
 description: Aurora Manager - konfigurator dashboardów Aurora Pulse - wybór encji pokoi i domu, ekran główny, dock, menu Więcej, motywy; kopie zapasowe.
 url: https://github.com/jaque66/dashboard-aurora-manager
