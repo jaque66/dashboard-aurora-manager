@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.4.1 – 2026-11-28
+
+**PL**
+- Widok Guard: usunięto przełącznik „Blokada reklam (DNS)” (dodany w 3.4.0) – funkcja została wycofana razem z Aurora Guard 2.9.2.
+
+**EN**
+- Guard view: removed the “Ad blocking (DNS)” switch (added in 3.4.0) – the feature was withdrawn together with Aurora Guard 2.9.2.
+
 ## 3.4.0 – 2026-11-28
 
 **PL**
