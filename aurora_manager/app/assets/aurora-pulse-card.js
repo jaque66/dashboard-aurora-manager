@@ -1552,6 +1552,8 @@ ha-icon { --mdc-icon-size: 22px; }
 #root.tb .rooms { grid-column: 3; grid-row: 1 / span 7; flex-direction: column; overflow-x: hidden; overflow-y: auto; padding: 34px 2px 4px 0; scroll-snap-type: none; min-height: 0; gap: 10px; }
 #root.tb .rm { width: 100%; max-width: none; padding: 11px 13px; scroll-snap-align: none; }
 #root.tb .rm .rv { margin: 6px 0 7px; } #root.tb .rm .rv b { font-size: 28px; }
+.vfs { display: none; flex: none; width: 42px; height: 42px; border-radius: 50%; place-items: center; margin-right: 8px; } #root.tb .vfs { display: grid; }
+#root.tb.vfsm #vw { left: 96px; width: auto; right: 0; border-radius: 0; border-left: 0; box-shadow: none; background: linear-gradient(180deg, #0a1020, #060a14) !important; } #root.tb.vfsm #vw .vb { max-width: 920px; margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box; } #root.tb.vfsm #vw .vh { padding-left: 22px; padding-right: 22px; max-width: 920px; margin-left: auto; margin-right: auto; width: 100%; box-sizing: border-box; }
 #root.tb #vw { left: auto; width: min(640px, 58vw); right: 0; top: 0; bottom: 0; border-radius: 34px 0 0 34px; border-left: 1px solid rgba(255,255,255,.14); box-shadow: -30px 0 80px rgba(0,0,0,.45); background: linear-gradient(160deg, rgba(14,20,38,.9), rgba(5,9,18,.94)); }
 #root.tb .vh { padding: 20px 22px 10px; } #root.tb .vb { padding: 4px 22px 28px; }
 #root.tb #sh { left: auto; right: 0; top: 0; bottom: 0; width: min(560px, 54vw); max-height: none; border-radius: 34px 0 0 34px; padding: 14px 24px 28px; }
@@ -1656,7 +1658,7 @@ class AuroraPulseCard extends AuroraBase {
     this.shadowRoot.innerHTML = `<style>${PULSE_CSS}</style><div id="root"><div id="xm"></div><div id="sky"><i class="rb r1"></i><i class="rb r2"></i><i class="rb r3"></i></div><div id="fx"></div><canvas id="mxr"></canvas>
       <div id="scroll"><div id="hero"></div><div id="pulse"></div><div id="lc"><div id="wxt"></div><div class="sec in" id="sect" style="--i:5">Teraz</div><div class="chips" id="chips"></div><div id="schl"></div></div>
       <div class="sec in" style="--i:7" id="secr">Pokoje</div><div class="rooms" id="rooms"></div><div class="sec in" id="secl" style="--i:8">Światła</div><div class="lts" id="lts"></div><div id="plg"></div></div>
-      <div id="vw"><div class="vh"><button class="bk gl" data-a="back" aria-label="Wstecz"><ha-icon icon="mdi:arrow-left"></ha-icon></button><div class="ti" id="vt"></div><span class="ic" id="vi"></span></div><div class="vb" id="vb"></div></div>
+      <div id="vw"><div class="vh"><button class="bk gl" data-a="back" aria-label="Wstecz"><ha-icon icon="mdi:arrow-left"></ha-icon></button><div class="ti" id="vt"></div><button class="vfs gl" data-a="vfs" aria-label="Pełny ekran" title="Pełny ekran"><ha-icon icon="mdi:arrow-expand-all"></ha-icon></button><span class="ic" id="vi"></span></div><div class="vb" id="vb"></div></div>
       <nav id="dock" class="gl"><div id="orbw"><button id="orb" data-a="orb" aria-label="Asystent"><i class="rp"></i><i class="rp r2"></i><ha-icon icon="mdi:creation"></ha-icon><span class="bars"><i></i><i></i><i></i><i></i><i></i></span></button></div>
       </nav>
       <div id="ov"><div class="bd" data-a="closeov"></div><div id="menu" style="display:none"></div><div id="rmn" class="gl" style="display:none"></div><div id="sh" class="gl" style="display:none"></div></div><div id="alm"></div><div id="toast"></div></div>`;
@@ -1740,7 +1742,7 @@ class AuroraPulseCard extends AuroraBase {
     if (tb) { if (ob) ob.style.order = String(seq.length + 2); } else { const pp = Math.ceil(seq.length / 2); if (ob) ob.style.order = String(pp * 2 + 1); h += mk('more', 998); }
     dk.insertAdjacentHTML('afterbegin', h);
   }
-  _pTb() { const L = this._config && this._config.layout, F = L && typeof L === 'object' ? L.force : L, tb = F === 'tablet' || (F !== 'phone' && window.innerWidth >= 900); const r = this.shadowRoot && this.shadowRoot.getElementById('root'); if (r) { r.classList.toggle('tb', !!tb); let lt = false; try { lt = localStorage.getItem('pulse_lite') === '1' || localStorage.getItem('pastel_lite') === '1'; } catch (x) { /* ignore */ } r.classList.toggle('lt', !!(tb && (lt || (this._config && this._config.lite)))); } this._tb = !!tb; this._pDockBuild(); this._pApplyLayout(); }
+  _pTb() { const L = this._config && this._config.layout, F = L && typeof L === 'object' ? L.force : L, tb = F === 'tablet' || (F !== 'phone' && window.innerWidth >= 900); const r = this.shadowRoot && this.shadowRoot.getElementById('root'); if (r) { r.classList.toggle('tb', !!tb); try { r.classList.toggle('vfsm', !!tb && localStorage.getItem('pulse_vfs') === '1'); } catch (x) { /* ignore */ } this._pVfs(); let lt = false; try { lt = localStorage.getItem('pulse_lite') === '1' || localStorage.getItem('pastel_lite') === '1'; } catch (x) { /* ignore */ } r.classList.toggle('lt', !!(tb && (lt || (this._config && this._config.lite)))); } this._tb = !!tb; this._pDockBuild(); this._pApplyLayout(); }
   connectedCallback() { if (this._built) this._pStart(); }
   disconnectedCallback() { this._pClay(false); this._pRib(false); if (this._tdSub) { Object.keys(this._tdSub).forEach((k) => { const u = this._tdSub[k]; if (typeof u === 'function') { try { u(); } catch (e) { /* ignore */ } } }); this._tdSub = null; } if (this._tk) { clearInterval(this._tk); this._tk = null; } if (this._rsT) { clearInterval(this._rsT); this._rsT = null; } this._vsHide(false); const pb = document.getElementById('pulse-vs-btn'); if (pb) pb.remove(); }
   set hass(h) {
@@ -2565,6 +2567,7 @@ class AuroraPulseCard extends AuroraBase {
     const part = L.map((x) => esc(x.g.name) + (x.a.gps_accuracy ? ' ±' + Math.round(x.a.gps_accuracy) + ' m' : ' · brak dokładności')), rough = L.some((x) => x.a.gps_accuracy > 100);
     el.innerHTML = part.join(' · ') + (rough ? ' · pozycja przybliżona' : ''); el.classList.toggle('wn', rough);
   }
+  _pVfs() { const r = this.shadowRoot && this.shadowRoot.getElementById('root'), b = r && r.querySelector('.vfs ha-icon'); if (b) b.setAttribute('icon', r.classList.contains('vfsm') ? 'mdi:arrow-collapse-all' : 'mdi:arrow-expand-all'); }
   _pGdMapTh() { let t = ''; try { t = localStorage.getItem('pulse_gdmap') || ''; } catch (e) { /* ignore */ } return t === 'dark' ? 'dark' : 'light'; }
   _pGdSet(g) {   /* ustawienia aplikacji na telefonie, sterowane z HA (helpery guard_*) */
     const S = this._hass.states, lo = S['input_boolean.guard_lokalizacja_' + g.id], ea = 'input_number.guard_lok_poza_' + g.id, eh = 'input_number.guard_lok_dom_' + g.id; if (!lo) return '';
@@ -2661,6 +2664,7 @@ class AuroraPulseCard extends AuroraBase {
     if (this._lpFired) { this._lpFired = false; return; }
     const b = e.target.closest('[data-a]'); if (!b) return; const a = b.dataset.a;
     if (a === 'closeov') { this._pOv(null); return; }
+    if (a === 'vfs') { const tn = Date.now(); if (tn - (this._vfsT || 0) < 450) return; this._vfsT = tn; const r = this.shadowRoot.getElementById('root'), on = !r.classList.contains('vfsm'); r.classList.toggle('vfsm', on); try { localStorage.setItem('pulse_vfs', on ? '1' : '0'); } catch (x) { /* ignore */ } this._pVfs(); this._pg.vb = null; if (this._vw) this._pVRender(true); return; }
     if (a === 'back') { this._pBack(); return; }
     if (a === 'ltg') { this._call('light', 'toggle', {entity_id: this._lE}); setTimeout(() => { if (this._shF === 'light') this._pSheet('light'); }, 500); return; }
     if (a === 'lcl') { const o = this._hass.states[this._lE], M = (o && o.attributes.supported_color_modes) || [], mn = (o && o.attributes.min_color_temp_kelvin) || 2000, mx = (o && o.attributes.max_color_temp_kelvin) || 6500; const wh = +b.dataset.s === 0;
