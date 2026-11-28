@@ -7,7 +7,6 @@
 - Mapa: czytelne znaczniki (inicjał dziecka zamiast ucinanego imienia, kolorowe kropki przy przyciskach wyboru) i większa strzałka powrotu; w nagłówku **dokładność lokalizacji** (±N m, a powyżej 100 m ostrzeżenie „pozycja przybliżona”).
 - Menu „Więcej”: **krótsze animacje** – kafelki pojawiają się ok. dwa razy szybciej.
 - Tablet: widoki (poza ekranem głównym) **otwierają się na pełny ekran** (zawartość wyśrodkowana, boczny dock na wierzchu okna). W Ustawieniach → Wygląd można wybrać „Panel boczny” zamiast pełnego ekranu; wybór jest zapamiętywany na urządzeniu.
-
 - Guard: **prośba o więcej czasu** – po „Odmów” (i po przyznaniu czasu) dziecko dostaje komunikat na telefonie („Rodzic odrzucił Twoją prośbę…” / „Rodzic dodał Ci +15 min”).
 - Guard: sekcja **„Blokady teraz”** pokazuje, które aplikacje są zablokowane ręcznie przez rodzica, a które z powodu wyczerpanego limitu czasu (z użyciem i bonusem).
 
