@@ -1212,7 +1212,7 @@ ha-icon { --mdc-icon-size: 22px; }
 #gdmfs { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; background: #0b1020; }
 #gdmfs .gmh { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top, 0px) + 12px) 14px 10px; flex: none; flex-wrap: wrap; }
 #gdmfs .gmh > b { font-size: 18px; font-weight: 600; margin-right: auto; }
-#gdmfs .bk { width: 54px !important; height: 54px !important; flex: none; } #gdmfs .bk ha-icon { --mdc-icon-size: 32px; width: 32px; height: 32px; }
+#gdmfs .bk { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; }   /* jak w pozostalych widokach (.vh .bk) */
 #gdmfs .gmc button i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; flex: none; }
 #gdmfs .gmt { width: 40px; height: 40px; border-radius: 50%; border: 0; display: grid; place-items: center; flex: none; color: inherit; background: rgba(255,255,255,.1); } #gdmfs .gmt[hidden] { display: none; }
 #gdmfs .gmc { display: flex; gap: 6px; flex-wrap: wrap; } #gdmfs .gmc button { width: auto !important; height: auto !important; min-width: 0 !important; aspect-ratio: auto !important; flex: none; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; padding: 8px 15px; border-radius: 99px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: inherit; font: inherit; font-size: 13px; } #gdmfs .gmc button.on { background: rgba(120,200,255,.25); border-color: rgba(120,200,255,.6); }
