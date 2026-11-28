@@ -2619,13 +2619,13 @@ class AuroraPulseCard extends AuroraBase {
     const st = this._hass.states['sensor.aurora_guard_' + g.id + '_status'], at = (st && st.attributes) || {}, ls = new Date(String(at.last_seen || '').replace(/(\d\d)(\d\d)$/, '$1:$2')), mn = isNaN(ls) ? null : Math.round((Date.now() - ls.getTime()) / 60000);
     const su = parseFloat(at.sleep_until) || 0, sl = !!st && su * 1000 > Date.now(), swk = sl ? new Date(su * 1000 - 1800000) : null, on = !!st && st.state === 'ok' && mn !== null && mn <= 25, off = mn === null ? '' : mn < 90 ? mn + ' min' : mn < 2880 ? Math.round(mn / 60) + ' godz.' : Math.round(mn / 1440) + ' dni';
     const txt = !st ? 'brak danych' : sl ? 'śpi do ' + String(swk.getHours()).padStart(2, '0') + ':' + String(swk.getMinutes()).padStart(2, '0') : st.state !== 'ok' ? 'usługa wyłączona' : on ? 'online' : 'offline' + (off ? ' od ' + off : '');
-    return `<span style="color:${sl ? '#8fa3ff' : on ? '#3fe0a5' : '#ff8a9a'}">●</span> ${esc(g.name)} · ${txt}${at.version ? ' · v' + esc(at.version) : ''}${on && at.battery != null ? ' · ' + esc(at.battery) + '%' : ''} ${this._pGdLock(g)}`;
+    return `<span style="display:inline-flex;align-items:center;gap:5px;line-height:1.5"><span style="color:${sl ? '#8fa3ff' : on ? '#3fe0a5' : '#ff8a9a'}">●</span><span>${esc(g.name)} · ${txt}${at.version ? ' · v' + esc(at.version) : ''}${on && at.battery != null ? ' · ' + esc(at.battery) + '%' : ''}</span>${this._pGdLock(g)}</span>`;
   }
   /* ikona klodki: czerwona = caly telefon zablokowany, bursztynowa = blokada aplikacji, zielona otwarta = bez blokady */
   _pGdLock(g) {
     const S = this._hass.states, full = (S['input_boolean.blokada_telefon_' + g.id + '_caly'] || {}).state === 'on', app = (S['input_boolean.blokada_telefon_' + g.id] || {}).state === 'on';
     const ic = full ? ['mdi:lock', '#ff6b7a', 'cały telefon zablokowany'] : app ? ['mdi:lock', '#ffb340', 'blokada aplikacji włączona'] : ['mdi:lock-open-variant-outline', '#3fe0a5', 'odblokowany'];
-    return `<ha-icon icon="${ic[0]}" title="${ic[2]}" style="--mdc-icon-size:15px;width:15px;height:15px;color:${ic[1]};vertical-align:-3px"></ha-icon>`;
+    return `<ha-icon icon="${ic[0]}" title="${ic[2]}" style="--mdc-icon-size:15px;width:15px;height:15px;color:${ic[1]};display:inline-flex;align-items:center;justify-content:center;flex:none"></ha-icon>`;
   }
   /* kazde dziecko w sekcji Guard jako osobne okno rozwijalne (klucz sekcja:id w this._gdOpen); blok dziecka = <div padding:8px 0 border-top> z naglowkiem (pierwszy div flex) */
   _pKidWrap(cat, body) {
